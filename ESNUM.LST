@@ -1,0 +1,144 @@
+Turbo Assembler	 Version 4.1	    10/18/20 11:52:33	    Page 1
+esnum.ASM
+
+
+
+      1
+      2
+      3	0000			     Datos Segment para	'Data'
+      4	0000  4E 6F 20 64 69 67	69+	     noNumero db 'No digito un numero ,vuelva ha digitar$'
+      5	      74 6F 20 75 6E 20	6E+
+      6	      75 6D 65 72 6F 20	2C+
+      7	      76 75 65 6C 76 61	20+
+      8	      68 61 20 64 69 67	69+
+      9	      74 61 72 24
+     10	0027  53 69 20 65 73 20	75+	 siNumero db 'Si es un numero',10,13,'$'
+     11	      6E 20 6E 75 6D 65	72+
+     12	      6F 0A 0D 24
+     13	0039  ??			 DelTeclado db ?
+     14	003A  00			 cont db 0d
+     15
+     16	003B			     Datos EndS
+     17
+     18					     Include macroST.cbc	     ;Llama la lib de macros...
+1    19
+1    20				     ;------------
+1    21				     ;	     MACROS
+1    22				     ;-----------
+1    23				     LimpiarPantalla Macro FI,CI,FD,CD,atributo
+1    24					     mov ax,0619h
+1    25					     mov ch,FI
+1    26					     mov cl,CI
+1    27					     mov dh,FD
+1    28					     mov bh,atributo
+1    29					     int 10h
+1    30				     EndM
+1    31
+1    32				     ImprimeString Macro mensaje
+1    33					     mov ah,09h
+1    34					     mov dx,offset mensaje
+1    35					     int 21h
+1    36				     EndM
+1    37
+1    38				     LeeCaracter Macro CaracterLeido
+1    39					     mov ah,01h
+1    40					     int 21h
+1    41					     mov CaracterLeido,al
+1    42				      EndM
+1    43				      ;----------------
+1    44				      ;	FIN MACROS
+1    45				      ;------------
+1    46
+     47
+     48
+     49	0000			     Codigo Segment  ;Define el	segmento de código para tasm.
+     50						Assume cs:Codigo, ds:Datos
+     51
+     52	0000				     Inicio:
+     53
+     54	0000  B8 0000s			     mov ax,Datos;Mueve	la posición de	SData al reg ax.
+     55	0003  8E D8			     mov      DS,ax	      ;Mueve la	posición de ax	(SData)	al reg DS.
+     56
+     57	0005  50			     push ax
+Turbo Assembler	 Version 4.1	    10/18/20 11:52:33	    Page 2
+esnum.ASM
+
+
+
+     58
+     59					     LeeCaracter DelTeclado
+1    60	0006  B4 01			     mov ah,01h
+1    61	0008  CD 21			     int 21h
+1    62	000A  A2 0039r			     mov DelTeclado,al
+     63	000D  33 C0				     xor ax,ax
+     64	000F  A0 0039r				     mov al,DelTeclado
+     65	0012  2C 30				 sub al,30h
+     66	0014  A2 0039r				 mov DelTeclado,al
+     67	0017  FF 36 0039r		     push word ptr DelTeclado
+     68
+     69	001B  51			     push cx
+     70	001C  33 C9			     xor cx,cx
+     71	001E  B1 0A				     mov cl,10d
+     72	0020					     ciclo:
+     73							     ; cmp cl,DelTeclado
+     74							     ; jz siEsNum
+     75							     imprimeString siNumero
+1    76	0020  B4 09			     mov ah,09h
+1    77	0022  BA 0027r			     mov dx,offset siNumero
+1    78	0025  CD 21			     int 21h
+     79	0027  E2 F7				     loop ciclo
+     80						     imprimeString noNumero
+1    81	0029  B4 09			     mov ah,09h
+1    82	002B  BA 0000r			     mov dx,offset noNumero
+1    83	002E  CD 21			     int 21h
+     84	0030  75 07				     jnz siga
+     85	0032					     siEsNum:
+     86							     imprimeString siNumero
+1    87	0032  B4 09			     mov ah,09h
+1    88	0034  BA 0027r			     mov dx,offset siNumero
+1    89	0037  CD 21			     int 21h
+     90							     ;retorna algo
+     91	0039					     siga:
+     92	0039  59				     pop cx
+     93
+     94	003A  58				     pop ax
+     95	003B  B8 4C00				     mov ax,4c00h
+     96	003E  CD 21				 int 21h
+     97	0040			     Codigo EndS			;Fin del segmento de código.
+     98					  End Inicio
+Turbo Assembler	 Version 4.1	    10/18/20 11:52:33	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "10/18/20"
+??FILENAME			  Text	 "esnum	  "
+??TIME				  Text	 "11:52:33"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODIGO
+@FILENAME			  Text	 ESNUM
+@WORDSIZE			  Text	 2
+CICLO				  Near	 CODIGO:0020
+CONT				  Byte	 DATOS:003A
+DELTECLADO			  Byte	 DATOS:0039
+INICIO				  Near	 CODIGO:0000
+NONUMERO			  Byte	 DATOS:0000
+SIESNUM				  Near	 CODIGO:0032
+SIGA				  Near	 CODIGO:0039
+SINUMERO			  Byte	 DATOS:0027
+
+Macro Name
+
+IMPRIMESTRING
+LEECARACTER
+LIMPIARPANTALLA
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODIGO				  16  0040 Para	  none
+DATOS				  16  003B Para	  none	  DATA
+

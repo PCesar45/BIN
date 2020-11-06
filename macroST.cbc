@@ -1,0 +1,78 @@
+
+;------------
+;	MACROS
+;-----------
+LimpiarPantalla Macro FI,CI,FD,CD,atributo
+	mov ax,0619h
+	mov ch,FI
+	mov cl,CI
+	mov dh,FD
+	mov bh,atributo
+	int 10h
+EndM
+
+ImprimeString Macro mensaje
+	mov ah,09h
+	mov dx,offset mensaje
+	int 21h
+EndM
+
+LeeCaracter Macro CaracterLeido
+	mov ah,01h
+ 	int 21h
+ 	mov CaracterLeido,al
+ EndM
+
+ Inilicializar Macro 
+  	mov ax,Datos	;Mueve la posición de SData al reg ax.
+  	mov      DS,ax  ;Mueve la posición de ax (SData) al reg DS.
+ EndM
+
+GuardaPrimerCaracter Macro CaracterLeido
+ 		xor ax,ax
+		mov al,CaracterLeido
+		sub al,30h
+ EndM
+Esnum Macro 
+	push cx
+	xor cx,cx
+	mov cl,10d
+	cicloN:
+		cmp cl,al
+		jz salir
+		loop cicloN
+	imprimeString noNumero
+	salir:
+	pop cx
+
+endM
+Esnum2 Macro 
+	push cx
+	xor cx,cx
+	mov cl,10d
+	cicloN2:
+		cmp cl,al
+		jz salir2
+		loop cicloN2
+	imprimeString noNumero
+	salir2:
+	pop cx
+
+endM
+UneCarateres Macro CaracterLeido ;Lee un caracter y lo une a la izquierda del caracter ya leidos en el al
+	mul multiplicador
+	mov CaracterLeido,al
+	push word ptr CaracterLeido
+
+	LeeCaracter CaracterLeido
+
+	pop word ptr CaracterLeido
+	sub al,30h
+ EndM
+Finalizar Macro
+	mov ax,4c00h
+	int 21h
+ EndM
+ ;----------------
+ ; FIN MACROS
+ ;------------

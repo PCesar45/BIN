@@ -1,0 +1,19 @@
+
+     include macroST.cbc	
+
+CodigoP1 Segment PARA 'Code'   
+ 	Public ifIguales    
+	Assume CS:CodigoP1
+
+	ifIguales Proc near
+		cmp al,ah
+		jz iguales
+		imprimeString Noiguales
+		jmp short saleif	
+		iguales:
+			imprimeString Siiguales
+		saleif:
+		ret	
+ 	ifIguales	EndP
+CodigoP1 EndS
+End 

@@ -1,0 +1,11 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 0007FH 00080H DATOS              DATA
+ 00080H 0008BH 0000CH DATOS2             
+ 00090H 00122H 00093H CODIGO             CODE
+
+Error: Undefined symbol IFIGUALES in module TAREA2.ASM
+Program entry point at 0009:0005
+Warning: No stack
+

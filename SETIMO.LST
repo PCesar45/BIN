@@ -1,0 +1,256 @@
+Turbo Assembler	 Version 4.1	    10/28/20 12:12:53	    Page 1
+setimo.ASM
+
+
+
+      1				     ;-------------------------------------------;
+      2				     ;Estructura de un programa	en ensamblador,	 ;
+      3				     ;para arquitectura	8086/8088/80306	mips	 ;
+      4				     ;Creado por: Ing. Carlos Benavides	C. MsC.	 ;
+      5				     ;Propósito: Docente, académico, ejemplo.	 ;
+      6				     ;Forma de compilación:			 ;
+      7				     ;	Usando el turbo	assembler de borland 4.	 ;
+      8				     ;	  tasm /zi /l quinto[.asm]		 ;
+      9				     ;	  tlink	/v quinto[.oobj]		 ;
+     10				     ;						 ;
+     11				     ; y si lo quiere depurar turbo debuger	 ;
+     12				     ;						 ;
+     13				     ;	    td quinto[.exe]			 ;
+     14				     ; FUM: Mayo 16, 2003.			 ;
+     15				     ;-------------------------------------------;
+     16
+     17	0000			     SSeg Segment para Stack 'Stack'
+     18
+     19	0000  40*(53 65	67 53 74  +	  db 64	Dup ('SegStack ')
+     20	      61 63 6B 20)
+     21
+     22	0240			     SSeg EndS
+     23
+     24	0000			     SData Segment para	'Data'
+     25
+     26	0000  48 6F 6C 61 20 4D	75+	  Message db 'Hola Mundo',10,13,'$'
+     27	      6E 64 6F 0A 0D 24
+     28
+     29	000D			     SData EndS
+     30
+     31				       extrn ClearScreen:Far,PrintfS:Far,PrintfC:Far
+     32				       extrn GotoXY:Far,WhereXY:Far,PrintHex:Far
+     33
+     34				     ;-------------------------------;
+     35				     ;	   Definición de Macros	     ;
+     36				     ;(afuera del segmento de código);
+     37				     ;-------------------------------;
+     38
+     39				     PushA Macro
+     40					    push      ax	     ;Guarda los todos los registro en...
+     41					    push      bx	     ;...la pila del programa.
+     42					    push      cx	     ;Preparación para rutinas
+     43					    push      dx	     ;Debe tener cuidado de llamar a la...
+     44					    push      si	     ;...siguiente macro (PopAllRegs) para...
+     45					    push      di	     ;poner equilibrar la pila...
+     46					    push      bp	     ;...sino lo hace el programa se cae...
+     47					    push      sp	     ;...y da un error.
+     48					    push      ds	     ;Note que el último elemento del pushallregs...
+     49					    push      es	     ;...es el primer elemento en salir	en popallregs.
+     50					    push      ss
+     51					    pushf		     ;Guarda el	registro de banderas en	la pila.
+     52				     EndM			     ;Su contra	parte es la macro siguiente.
+     53
+     54				     PopA Macro
+     55					    popf		     ;...la pila del programa.
+     56					    pop	      ss	     ;Esto se hace después de la llamada a una rutina
+     57					    pop	      es	     ;Debe tener cuidado de llamar a esta...
+Turbo Assembler	 Version 4.1	    10/28/20 12:12:53	    Page 2
+setimo.ASM
+
+
+
+     58					    pop	      ds	     ;...macro (PopAllRegs) para...
+     59					    pop	      sp	     ;poner equilibrar la pila...
+     60					    pop	      bp	     ;...solamente después de haber...
+     61					    pop	      di	     ;...llamado antes a pushallregs.
+     62					    pop	      si	     ; Sino se produce un error	en el programa.
+     63					    pop	      dx
+     64					    pop	      cx
+     65					    pop	      bx
+     66					    pop	      ax
+     67				     EndM
+     68
+     69	0000			     CSeg Segment para public 'Code'  ;Define el segmento de código para tasm.
+     70
+     71	0000			      main Proc	Far		      ;Procedimiento principal como main{ } en C.
+     72					   Assume CS:CSeg, SS:SSeg    ;Asignación de los segmentos a los registro de segmentos del  +
+     73				     CPU.
+     74
+     75	0000  1E			     push     DS	      ;Guardar posición	del reg	DS en la pila.
+     76	0001  33 C0			     xor      ax,ax	      ;Pone en cero al reg ax.
+     77	0003  50			     push     ax	      ;Guarda el desplazamiento	cero en	la pila.
+     78	0004  B8 0000s			     mov      ax,SData	      ;Mueve la	posición de SData al reg ax.
+     79	0007  8E D8			     mov      DS,ax	      ;Mueve la	posición de ax (SData) al reg DS.
+     80	0009  8E C0			     mov      ES,ax	      ;Mueve la	posición de ax (SData) al reg ES.
+     81
+     82					     PushA	      ;guardar el estado del CPU.
+1    83	000B  50			    push      ax	     ;Guarda los todos los registro en...
+1    84	000C  53			    push      bx	     ;...la pila del programa.
+1    85	000D  51			    push      cx	     ;Preparación para rutinas
+1    86	000E  52			    push      dx	     ;Debe tener cuidado de llamar a la...
+1    87	000F  56			    push      si	     ;...siguiente macro (PopAllRegs) para...
+1    88	0010  57			    push      di	     ;poner equilibrar la pila...
+1    89	0011  55			    push      bp	     ;...sino lo hace el programa se cae...
+1    90	0012  54			    push      sp	     ;...y da un error.
+1    91	0013  1E			    push      ds	     ;Note que el último elemento del pushallregs...
+1    92	0014  06			    push      es	     ;...es el primer elemento en salir	en popallregs.
+1    93	0015  16			    push      ss
+1    94	0016  9C			    pushf		     ;Guarda el	registro de banderas en	la pila.
+     95
+     96					     PushA
+1    97	0017  50			    push      ax	     ;Guarda los todos los registro en...
+1    98	0018  53			    push      bx	     ;...la pila del programa.
+1    99	0019  51			    push      cx	     ;Preparación para rutinas
+1   100	001A  52			    push      dx	     ;Debe tener cuidado de llamar a la...
+1   101	001B  56			    push      si	     ;...siguiente macro (PopAllRegs) para...
+1   102	001C  57			    push      di	     ;poner equilibrar la pila...
+1   103	001D  55			    push      bp	     ;...sino lo hace el programa se cae...
+1   104	001E  54			    push      sp	     ;...y da un error.
+1   105	001F  1E			    push      ds	     ;Note que el último elemento del pushallregs...
+1   106	0020  06			    push      es	     ;...es el primer elemento en salir	en popallregs.
+1   107	0021  16			    push      ss
+1   108	0022  9C			    pushf		     ;Guarda el	registro de banderas en	la pila.
+    109
+    110	0023  B0 19			     mov      al,25	      ;Número de líneas	por desplazar en este caso total de filas 25.
+    111	0025  B7 0F			     mov      bh,0fh	      ;Atributo	con que	se va a	desplazar; es decir; color. 00 =    +
+    112				     negro.
+    113	0027  B5 00			     mov      ch,00	      ;En donde	comienza: fila de la esquina superior izquierda.
+    114	0029  B1 00			     mov      cl,00	      ;En donde	comienza: columna de la	esquina	superior izquierda.
+Turbo Assembler	 Version 4.1	    10/28/20 12:12:53	    Page 3
+setimo.ASM
+
+
+
+    115	002B  B6 19			     mov      dh,25	      ;En donde	termina:  fila de la esquina inferior derecha.
+    116	002D  B2 50			     mov      dl,80	      ;En donde	termina:  columna de la	esquina	inferior derecha.
+    117	002F  9A 00000000se		     call     ClearScreen     ;limpiar la pantalla y preparar el color del texto.
+    118					     PopA
+1   119	0034  9D			    popf		     ;...la pila del programa.
+1   120	0035  17			    pop	      ss	     ;Esto se hace después de la llamada a una rutina
+1   121	0036  07			    pop	      es	     ;Debe tener cuidado de llamar a esta...
+1   122	0037  1F			    pop	      ds	     ;...macro (PopAllRegs) para...
+1   123	0038  5C			    pop	      sp	     ;poner equilibrar la pila...
+1   124	0039  5D			    pop	      bp	     ;...solamente después de haber...
+1   125	003A  5F			    pop	      di	     ;...llamado antes a pushallregs.
+1   126	003B  5E			    pop	      si	     ; Sino se produce un error	en el programa.
+1   127	003C  5A			    pop	      dx
+1   128	003D  59			    pop	      cx
+1   129	003E  5B			    pop	      bx
+1   130	003F  58			    pop	      ax
+    131
+    132	0040  B1 00			     mov      cl,00	      ;imprimir	15 veces hola mundo.
+    133	0042  FE C1		     ciclo1: inc      cl	      ;disminuya el ciclo.
+    134					     PushA
+1   135	0044  50			    push      ax	     ;Guarda los todos los registro en...
+1   136	0045  53			    push      bx	     ;...la pila del programa.
+1   137	0046  51			    push      cx	     ;Preparación para rutinas
+1   138	0047  52			    push      dx	     ;Debe tener cuidado de llamar a la...
+1   139	0048  56			    push      si	     ;...siguiente macro (PopAllRegs) para...
+1   140	0049  57			    push      di	     ;poner equilibrar la pila...
+1   141	004A  55			    push      bp	     ;...sino lo hace el programa se cae...
+1   142	004B  54			    push      sp	     ;...y da un error.
+1   143	004C  1E			    push      ds	     ;Note que el último elemento del pushallregs...
+1   144	004D  06			    push      es	     ;...es el primer elemento en salir	en popallregs.
+1   145	004E  16			    push      ss
+1   146	004F  9C			    pushf		     ;Guarda el	registro de banderas en	la pila.
+    147
+    148	0050  8A C1			     mov      al,cl	      ;preserve	el ciclo. al con el caracter a imprimir.
+    149	0052  9A 00000000se		     call     PrintHex	      ;conviertalo a ascii.
+    150	0057  9A 00000000se		     call     WhereXY
+    151	005C  32 FF			     xor      bh,bh	      ;pagina actualmente desplegada.
+    152	005E  FE C2			     inc      dl	      ;incremente la columna.
+    153	0060  9A 00000000se		     call     GotoXY
+    154	0065  32 DB			     xor      bl,bl	      ;pagina actualmente desplegada.
+    155	0067  B2 FF			     mov      dl,255	      ;espacion	en blanco.
+    156	0069  9A 00000000se		     call     PrintfC	      ;imprime un espacio en blanco.
+    157	006E  9A 00000000se		     call     WhereXY
+    158	0073  FE C2			     inc      dl
+    159	0075  9A 00000000se		     call     GotoXY
+    160	007A  BA 0000r			     lea      dx,Message
+    161	007D  9A 00000000se		     call     PrintfS	      ;imprimir	Message	terminada por el caracter $.
+    162					     PopA
+1   163	0082  9D			    popf		     ;...la pila del programa.
+1   164	0083  17			    pop	      ss	     ;Esto se hace después de la llamada a una rutina
+1   165	0084  07			    pop	      es	     ;Debe tener cuidado de llamar a esta...
+1   166	0085  1F			    pop	      ds	     ;...macro (PopAllRegs) para...
+1   167	0086  5C			    pop	      sp	     ;poner equilibrar la pila...
+1   168	0087  5D			    pop	      bp	     ;...solamente después de haber...
+1   169	0088  5F			    pop	      di	     ;...llamado antes a pushallregs.
+1   170	0089  5E			    pop	      si	     ; Sino se produce un error	en el programa.
+1   171	008A  5A			    pop	      dx
+Turbo Assembler	 Version 4.1	    10/28/20 12:12:53	    Page 4
+setimo.ASM
+
+
+
+1   172	008B  59			    pop	      cx
+1   173	008C  5B			    pop	      bx
+1   174	008D  58			    pop	      ax
+    175
+    176	008E  80 F9 0F			     cmp      cl,0fh	      ;todos los colores?
+    177	0091  7C AF			 jl  ciclo1		      ;salto directamente a ciclo1.
+    178					     PopA	      ;Saque todos los registros.
+1   179	0093  9D			    popf		     ;...la pila del programa.
+1   180	0094  17			    pop	      ss	     ;Esto se hace después de la llamada a una rutina
+1   181	0095  07			    pop	      es	     ;Debe tener cuidado de llamar a esta...
+1   182	0096  1F			    pop	      ds	     ;...macro (PopAllRegs) para...
+1   183	0097  5C			    pop	      sp	     ;poner equilibrar la pila...
+1   184	0098  5D			    pop	      bp	     ;...solamente después de haber...
+1   185	0099  5F			    pop	      di	     ;...llamado antes a pushallregs.
+1   186	009A  5E			    pop	      si	     ; Sino se produce un error	en el programa.
+1   187	009B  5A			    pop	      dx
+1   188	009C  59			    pop	      cx
+1   189	009D  5B			    pop	      bx
+1   190	009E  58			    pop	      ax
+    191
+    192	009F  CB			     ret		      ;Retorna el control al SO.
+    193	00A0			      main EndP			      ;Fin del procedimiento principal main.
+    194
+    195
+    196
+    197	00A0			     CSeg EndS			      ;Fin del segmento	de código.
+    198					  End main		      ;Fin del programa	la etiqueta al final dice en que punto debe +
+    199				     comenzar el programa.
+Turbo Assembler	 Version 4.1	    10/28/20 12:12:53	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "10/28/20"
+??FILENAME			  Text	 "setimo  "
+??TIME				  Text	 "12:12:53"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CSEG
+@FILENAME			  Text	 SETIMO
+@WORDSIZE			  Text	 2
+CICLO1				  Near	 CSEG:0042
+CLEARSCREEN			  Far	 ----:---- Extern
+GOTOXY				  Far	 ----:---- Extern
+MAIN				  Far	 CSEG:0000
+MESSAGE				  Byte	 SDATA:0000
+PRINTFC				  Far	 ----:---- Extern
+PRINTFS				  Far	 ----:---- Extern
+PRINTHEX			  Far	 ----:---- Extern
+WHEREXY				  Far	 ----:---- Extern
+
+Macro Name
+
+POPA
+PUSHA
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CSEG				  16  00A0 Para	  Public  CODE
+SDATA				  16  000D Para	  none	  DATA
+SSEG				  16  0240 Para	  Stack	  STACK
+

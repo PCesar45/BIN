@@ -1,0 +1,326 @@
+Turbo Assembler	 Version 4.1	    10/19/20 15:29:16	    Page 1
+tarea2.ASM
+
+
+
+      1				     ;-------------------------------------------;
+      2				     ;Estructura de un programa	en ensamblador,	 ;
+      3				     ;para arquitectura	8086/8088/80306	mips	 ;
+      4				     ;Creado por: Ing. Carlos Benavides	C. MsC.	 ;
+      5				     ;Propósito: Docente, académico, ejemplo.	   ;
+      6				     ;Forma de compilación:			  ;
+      7				     ;	Usando el turbo	assembler de borland 4.	 ;
+      8				     ;	  tasm /zi /l cuarto[.asm]		;
+      9				     ;	  tlink	/v cuarto[.oobj]		;
+     10				     ;						 ;
+     11				     ; y si lo quiere depurar turbo debuger	 ;
+     12				     ;						 ;
+     13				     ;	    td cuarto[.exe]			;
+     14				     ; FUM: Mayo 16, 2003.			 ;
+     15				     ;-------------------------------------------;
+     16
+     17				      public Noiguales
+     18				      public Siiguales
+     19	0000			     Datos Segment para	'Data'
+     20
+     21	0000  48 6F 6C 61 20 4D	75+	  Mensaje db 'Hola Mundo',10,13,'$'
+     22	      6E 64 6F 0A 0D 24
+     23	000D  4E 6F 20 73 6F 6E	20+	  Noiguales db 'No son iguales$'
+     24	      69 67 75 61 6C 65	73+
+     25	      24
+     26	001C  73 69 20 73 6F 6E	20+	  Siiguales db 'si son iguales$'
+     27	      69 67 75 61 6C 65	73+
+     28	      24
+     29	002B  0A 0D 4E 6F 20 69	6E+	  noNumero db  10,13,'No ingreso un numero ,vuelva ha ingresar',10,13,'$'
+     30	      67 72 65 73 6F 20	75+
+     31	      6E 20 6E 75 6D 65	72+
+     32	      6F 20 2C 76 75 65	6C+
+     33	      76 61 20 68 61 20	69+
+     34	      6E 67 72 65 73 61	72+
+     35	      0A 0D 24
+     36	0058  53 69 20 65 73 20	75+	  siNumero db 'Si es un	numero $'
+     37	      6E 20 6E 75 6D 65	72+
+     38	      6F 20 24
+     39	0069  ??			  DelTeclado db	?
+     40	006A  0A			  multiplicador	db 10d
+     41	006B  71 75 69 65 72 65	20+	  Otro db 'quiere imprimir otro$'
+     42	      69 6D 70 72 69 6D	69+
+     43	      72 20 6F 74 72 6F	24
+     44	0080			     Datos EndS
+     45					Include	macroST.cbc	     ;Llama la lib de macros...
+1    46
+1    47				     ;------------
+1    48				     ;	     MACROS
+1    49				     ;-----------
+1    50				     LimpiarPantalla Macro FI,CI,FD,CD,atributo
+1    51					     mov ax,0619h
+1    52					     mov ch,FI
+1    53					     mov cl,CI
+1    54					     mov dh,FD
+1    55					     mov bh,atributo
+1    56					     int 10h
+1    57				     EndM
+Turbo Assembler	 Version 4.1	    10/19/20 15:29:16	    Page 2
+tarea2.ASM
+
+
+
+1    58
+1    59				     ImprimeString Macro mensaje
+1    60					     mov ah,09h
+1    61					     mov dx,offset mensaje
+1    62					     int 21h
+1    63				     EndM
+1    64
+1    65				     LeeCaracter Macro CaracterLeido
+1    66					     mov ah,01h
+1    67					     int 21h
+1    68					     mov CaracterLeido,al
+1    69				      EndM
+1    70
+1    71				      Inilicializar Macro
+1    72					     mov ax,Datos    ;Mueve la posición de SData al reg ax.
+1    73					     mov      DS,ax  ;Mueve la posición de ax (SData) al reg DS.
+1    74				      EndM
+1    75
+1    76				     GuardaPrimerCaracter Macro	CaracterLeido
+1    77						     xor ax,ax
+1    78						     mov al,CaracterLeido
+1    79						     sub al,30h
+1    80				      EndM
+1    81				     Esnum Macro
+1    82					     push cx
+1    83					     xor cx,cx
+1    84					     mov cl,10d
+1    85					     cicloN:
+1    86						     cmp cl,al
+1    87						     jz	salir
+1    88						     loop cicloN
+1    89					     imprimeString noNumero
+1    90					     salir:
+1    91					     pop cx
+1    92
+1    93				     endM
+1    94				     Esnum2 Macro
+1    95					     push cx
+1    96					     xor cx,cx
+1    97					     mov cl,10d
+1    98					     cicloN2:
+1    99						     cmp cl,al
+1   100						     jz	salir2
+1   101						     loop cicloN2
+1   102					     imprimeString noNumero
+1   103					     salir2:
+1   104					     pop cx
+1   105
+1   106				     endM
+1   107				     UneCarateres Macro	CaracterLeido ;Lee un caracter y lo une	a la izquierda del caracter ya	    +
+    108				     leidos en el al
+1   109					     mul multiplicador
+1   110					     mov CaracterLeido,al
+1   111					     push word ptr CaracterLeido
+1   112
+1   113					     LeeCaracter CaracterLeido
+1   114
+Turbo Assembler	 Version 4.1	    10/19/20 15:29:16	    Page 3
+tarea2.ASM
+
+
+
+1   115					     pop word ptr CaracterLeido
+1   116					     sub al,30h
+1   117				      EndM
+1   118				     Finalizar Macro
+1   119					     mov ax,4c00h
+1   120					     int 21h
+1   121				      EndM
+1   122				      ;----------------
+1   123				      ;	FIN MACROS
+1   124				      ;------------
+1   125
+    126
+    127	0000			     Datos2 Segment ;Un	programa puede	tener varios segmentos de la ,isma clase
+    128	0000  53 65 67 75 6E 64	6F+	     varia db 'Segundo msg$'
+    129	      20 6D 73 67 24
+    130	000C			     Datos2 EndS
+    131
+    132				      extrn IfIguales :near
+    133
+    134	0000			     Codigo Segment para public	'Code'	;Define	el segmento de código para tasm.
+    135
+    136	      =000E			 Amarrilo EQU 14d
+    137	0000  00			 ColIzq	db 0
+    138	0001  00			 FilIzq	db 0
+    139	0002  4F			 ColDer	db 79
+    140	0003  18			 FilDer	db 24
+    141	0004  0E			 Atri db Amarrilo
+    142
+    143
+    144					 extrn IfIguales :near
+*Warning* tarea2.ASM(48) Symbol	already	defined	elsewhere: IFIGUALES
+    145
+    146					  Assume cs:Codigo, ds:Datos
+    147
+    148	0005				  Inicio:
+    149
+    150					      Inilicializar
+1   151	0005  B8 0000s			     mov ax,Datos    ;Mueve la posición de SData al reg ax.
+1   152	0008  8E D8			     mov      DS,ax  ;Mueve la posición de ax (SData) al reg DS.
+    153					      limpiarPantalla FilIzq,ColIzq,FilDer,ColDer,Atri
+1   154	000A  B8 0619			     mov ax,0619h
+1   155	000D  2E: 8A 2E	0001r		     mov ch,FilIzq
+1   156	0012  2E: 8A 0E	0000r		     mov cl,ColIzq
+1   157	0017  2E: 8A 36	0003r		     mov dh,FilDer
+1   158	001C  2E: 8A 3E	0004r		     mov bh,Atri
+1   159	0021  CD 10			     int 10h
+    160					      imprimeString Mensaje
+1   161	0023  B4 09			     mov ah,09h
+1   162	0025  BA 0000r			     mov dx,offset Mensaje
+1   163	0028  CD 21			     int 21h
+    164
+    165	002A  50			      push ax
+    166	002B				      Pedir:
+    167							     LeeCaracter DelTeclado
+1   168	002B  B4 01			     mov ah,01h
+1   169	002D  CD 21			     int 21h
+1   170	002F  A2 0069r			     mov DelTeclado,al
+Turbo Assembler	 Version 4.1	    10/19/20 15:29:16	    Page 4
+tarea2.ASM
+
+
+
+    171							     GuardaPrimerCaracter DelTeclado
+1   172	0032  33 C0				     xor ax,ax
+1   173	0034  A0 0069r				     mov al,DelTeclado
+1   174	0037  2C 30				     sub al,30h
+    175
+    176							     Esnum ;revisa si lo que esta en el	al es un digito
+1   177	0039  51			     push cx
+1   178	003A  33 C9			     xor cx,cx
+1   179	003C  B1 0A			     mov cl,10d
+1   180	003E				     cicloN:
+1   181	003E  3A C8				     cmp cl,al
+1   182	0040  74 09				     jz	salir
+1   183	0042  E2 FA				     loop cicloN
+1   184					     imprimeString noNumero
+2   185	0044  B4 09			     mov ah,09h
+2   186	0046  BA 002Br			     mov dx,offset noNumero
+2   187	0049  CD 21			     int 21h
+1   188	004B				     salir:
+1   189	004B  59			     pop cx
+    190	004C  74 02					     jz	siEsNum
+    191	004E  75 DB					     jnz Pedir
+    192	0050						     siEsNum:
+    193							     UneCarateres DelTeclado
+1   194	0050  F6 26 006Ar		     mul multiplicador
+1   195	0054  A2 0069r			     mov DelTeclado,al
+1   196	0057  FF 36 0069r		     push word ptr DelTeclado
+1   197					     LeeCaracter DelTeclado
+2   198	005B  B4 01			     mov ah,01h
+2   199	005D  CD 21			     int 21h
+2   200	005F  A2 0069r			     mov DelTeclado,al
+1   201	0062  8F 06 0069r		     pop word ptr DelTeclado
+1   202	0066  2C 30			     sub al,30h
+    203
+    204							     Esnum2
+1   205	0068  51			     push cx
+1   206	0069  33 C9			     xor cx,cx
+1   207	006B  B1 0A			     mov cl,10d
+1   208	006D				     cicloN2:
+1   209	006D  3A C8				     cmp cl,al
+1   210	006F  74 09				     jz	salir2
+1   211	0071  E2 FA				     loop cicloN2
+1   212					     imprimeString noNumero
+2   213	0073  B4 09			     mov ah,09h
+2   214	0075  BA 002Br			     mov dx,offset noNumero
+2   215	0078  CD 21			     int 21h
+1   216	007A				     salir2:
+1   217	007A  59			     pop cx
+    218	007B  74 02					     jz	siEsNum2
+    219	007D  75 AC					     jnz Pedir
+    220	007F						     siEsNum2:
+    221	007F  00 06 0069r				     add DelTeclado,al
+    222
+    223	0083  33 C0					     xor ax,ax
+    224	0085  A0 0069r					     mov al,DelTeclado
+    225	0088  B4 0E					     mov ah,Amarrilo
+    226
+    227	008A  E8 0000e					     call ifIguales
+Turbo Assembler	 Version 4.1	    10/19/20 15:29:16	    Page 5
+tarea2.ASM
+
+
+
+    228
+    229	008D  58					     pop ax
+    230						     Finalizar
+1   231	008E  B8 4C00			     mov ax,4c00h
+1   232	0091  CD 21			     int 21h
+    233	0093			     Codigo EndS			;Fin del segmento de código.
+    234					  End Inicio			;Fin del programa la etiqueta al final dice en que punto    +
+    235				     debe comenzar el programa.
+Turbo Assembler	 Version 4.1	    10/19/20 15:29:16	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "10/19/20"
+??FILENAME			  Text	 "tarea2  "
+??TIME				  Text	 "15:29:16"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODIGO
+@FILENAME			  Text	 TAREA2
+@WORDSIZE			  Text	 2
+AMARRILO			  Number 000E
+ATRI				  Byte	 CODIGO:0004
+CICLON				  Near	 CODIGO:003E
+CICLON2				  Near	 CODIGO:006D
+COLDER				  Byte	 CODIGO:0002
+COLIZQ				  Byte	 CODIGO:0000
+DELTECLADO			  Byte	 DATOS:0069
+FILDER				  Byte	 CODIGO:0003
+FILIZQ				  Byte	 CODIGO:0001
+IFIGUALES			  Near	 ----:---- Extern
+INICIO				  Near	 CODIGO:0005
+MENSAJE				  Byte	 DATOS:0000
+MULTIPLICADOR			  Byte	 DATOS:006A
+NOIGUALES			  Byte	 DATOS:000D
+NONUMERO			  Byte	 DATOS:002B
+OTRO				  Byte	 DATOS:006B
+PEDIR				  Near	 CODIGO:002B
+SALIR				  Near	 CODIGO:004B
+SALIR2				  Near	 CODIGO:007A
+SIESNUM				  Near	 CODIGO:0050
+SIESNUM2			  Near	 CODIGO:007F
+SIIGUALES			  Byte	 DATOS:001C
+SINUMERO			  Byte	 DATOS:0058
+VARIA				  Byte	 DATOS2:0000
+
+Macro Name
+
+ESNUM
+ESNUM2
+FINALIZAR
+GUARDAPRIMERCARACTER
+IMPRIMESTRING
+INILICIALIZAR
+LEECARACTER
+LIMPIARPANTALLA
+UNECARATERES
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODIGO				  16  0093 Para	  Public  CODE
+DATOS				  16  0080 Para	  none	  DATA
+DATOS2				  16  000C Para	  none
+Turbo Assembler	 Version 4.1	    10/19/20 15:29:16	    Page 7
+Error Summary
+
+
+
+*Warning* tarea2.ASM(48) Symbol	already	defined	elsewhere: IFIGUALES
+

@@ -1,0 +1,64 @@
+Turbo Assembler	 Version 4.1	    10/05/20 14:40:09	    Page 1
+pruep2.ASM
+
+
+
+      1
+      2	0000			     SegDatos segment para "Data"
+      3	0000  31			     n db "1"
+      4	0001  02			     n1	db 2
+      5	0002			     Ends SegDatos
+      6	0000			     SegCodigo segment para "code"
+      7	0000				     Inicio:
+      8						     assume CS:SegCodigo
+      9
+     10	0000  33 C0				     xor ax,ax ;ax en cero
+     11	0002  50				     push ax ; meter al	ax a la	pila
+     12	0003  B8 0000s				     mov ax,SegDatos ;mover al ax el SegDatos
+     13	0006  8E D8				     mov DS,ax;	mover al DS el ax con el SegDatos
+     14						     ;pop ax ;Sacar el ax de la	pila
+     15
+     16						     ;push ax
+     17						     ;add n,n1 ;suma dos operandos y guarda el resultado en el primero
+     18
+     19	0008  8A 16 0000r			     mov dl,n  ; careacter a imprimir
+**Error** pruep2.ASM(19) Can't address with currently ASSUMEd segment registers
+     20	000C  B4 05				     mov ah,05h	;ah =05h
+     21	000E  CD 21				     int 21h ;interrupcion 21h con ah=05 imprime un caracter
+     22
+     23	0010  33 C0				     xor ax,ax		     ;Limpia el	al y prepara el	ah para	la salida.
+     24	0012  B8 4C00			     mov ax,4c00h    ;Servicio AH=4c int 21h para salir	del programa.
+     25	0015  CD 21			     int 21h		     ;Llamada al DOS. Termine el programa.
+     26	0017			     Ends SegCodigo
+     27					     end Inicio
+Turbo Assembler	 Version 4.1	    10/05/20 14:40:09	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "10/05/20"
+??FILENAME			  Text	 "pruep2  "
+??TIME				  Text	 "14:40:09"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 SEGCODIGO
+@FILENAME			  Text	 PRUEP2
+@WORDSIZE			  Text	 2
+INICIO				  Near	 SEGCODIGO:0000
+N				  Byte	 SEGDATOS:0000
+N1				  Byte	 SEGDATOS:0001
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+SEGCODIGO			  16  0017 Para	  none	  CODE
+SEGDATOS			  16  0002 Para	  none	  DATA
+Turbo Assembler	 Version 4.1	    10/05/20 14:40:09	    Page 3
+Error Summary
+
+
+
+**Error** pruep2.ASM(19) Can't address with currently ASSUMEd segment registers
+

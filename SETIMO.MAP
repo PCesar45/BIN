@@ -1,0 +1,15 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 0023FH 00240H SSEG               STACK
+ 00240H 0024CH 0000DH SDATA              DATA
+ 00250H 002EFH 000A0H CSEG               CODE
+
+Error: Undefined symbol CLEARSCREEN in module SETIMO.ASM
+Error: Undefined symbol PRINTHEX in module SETIMO.ASM
+Error: Undefined symbol WHEREXY in module SETIMO.ASM
+Error: Undefined symbol GOTOXY in module SETIMO.ASM
+Error: Undefined symbol PRINTFC in module SETIMO.ASM
+Error: Undefined symbol PRINTFS in module SETIMO.ASM
+Program entry point at 0025:0000
+

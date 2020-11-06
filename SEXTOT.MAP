@@ -1,0 +1,11 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 0007DH 0007EH DATOS              DATA
+ 00080H 0008BH 0000CH DATOS2             
+ 00090H 000C7H 00038H CODIGO2            
+ 000D0H 0016AH 0009BH CODIGO             CODE
+
+Program entry point at 000D:0005
+Warning: No stack
+

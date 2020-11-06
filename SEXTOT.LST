@@ -1,0 +1,345 @@
+Turbo Assembler	 Version 4.1	    10/16/20 19:04:31	    Page 1
+sextot.ASM
+
+
+
+      1				     ;-------------------------------------------;
+      2				     ;Estructura de un programa	en ensamblador,	 ;
+      3				     ;para arquitectura	8086/8088/80306	mips	 ;
+      4				     ;Creado por: Ing. Carlos Benavides	C. MsC.	 ;
+      5				     ;Propósito: Docente, académico, ejemplo.	   ;
+      6				     ;Forma de compilación:			  ;
+      7				     ;	Usando el turbo	assembler de borland 4.	 ;
+      8				     ;	  tasm /zi /l cuarto[.asm]		;
+      9				     ;	  tlink	/v cuarto[.oobj]		;
+     10				     ;						 ;
+     11				     ; y si lo quiere depurar turbo debuger	 ;
+     12				     ;						 ;
+     13				     ;	    td cuarto[.exe]			;
+     14				     ; FUM: Mayo 16, 2003.			 ;
+     15				     ;-------------------------------------------;
+     16
+     17	0000			     Datos Segment para	'Data'
+     18
+     19	0000  48 6F 6C 61 20 4D	75+	  Mensaje db 'Hola Mundo',10,13,'$'
+     20	      6E 64 6F 0A 0D 24
+     21	000D  4E 6F 20 73 6F 6E	20+	  Noiguales db 'No son iguales$'
+     22	      69 67 75 61 6C 65	73+
+     23	      24
+     24	001C  73 69 20 73 6F 6E	20+	  Siiguales db 'si son iguales$'
+     25	      69 67 75 61 6C 65	73+
+     26	      24
+     27	002B  0A 0D 4E 6F 20 64	69+	  noNumero db  10,13,'No digito	un numero ,vuelva ha digitar',10,13,'$'
+     28	      67 69 74 6F 20 75	6E+
+     29	      20 6E 75 6D 65 72	6F+
+     30	      20 2C 76 75 65 6C	76+
+     31	      61 20 68 61 20 64	69+
+     32	      67 69 74 61 72 0A	0D+
+     33	      24
+     34	0056  53 69 20 65 73 20	75+	  siNumero db 'Si es un	numero $'
+     35	      6E 20 6E 75 6D 65	72+
+     36	      6F 20 24
+     37	0067  ??			  DelTeclado db	?
+     38	0068  0A			  multiplicador	db 10d
+     39	0069  71 75 69 65 72 65	20+	  Otro db 'quiere imprimir otro$'
+     40	      69 6D 70 72 69 6D	69+
+     41	      72 20 6F 74 72 6F	24
+     42	007E			     Datos EndS
+     43
+     44					Include	macroST.cbc	     ;Llama la lib de macros...
+1    45
+1    46				     ;------------
+1    47				     ;	     MACROS
+1    48				     ;-----------
+1    49				     LimpiarPantalla Macro FI,CI,FD,CD,atributo
+1    50					     mov ax,0619h
+1    51					     mov ch,FI
+1    52					     mov cl,CI
+1    53					     mov dh,FD
+1    54					     mov bh,atributo
+1    55					     int 10h
+1    56				     EndM
+1    57
+Turbo Assembler	 Version 4.1	    10/16/20 19:04:31	    Page 2
+sextot.ASM
+
+
+
+1    58				     ImprimeString Macro mensaje
+1    59					     mov ah,09h
+1    60					     mov dx,offset mensaje
+1    61					     int 21h
+1    62				     EndM
+1    63
+1    64				     LeeCaracter Macro CaracterLeido
+1    65					     mov ah,01h
+1    66					     int 21h
+1    67					     mov CaracterLeido,al
+1    68				      EndM
+1    69				      ;----------------
+1    70				      ;	FIN MACROS
+1    71				      ;------------
+1    72
+     73
+     74	0000			     Datos2 Segment ;Un	programa puede	tener varios segmentos de la ,isma clase
+     75	0000  53 65 67 75 6E 64	6F+	     varia db 'Segundo msg$'
+     76	      20 6D 73 67 24
+     77	000C			     Datos2 EndS
+     78
+     79	0000			     Codigo2 Segment
+     80					     Assume cs:codigo2,ds:Datos2
+     81
+     82	0000				     imprimirMensaje proc Far
+     83	0000  50				     push ax
+     84	0001  B8 0000s				     mov ax,Datos2
+     85	0004  8E D8				     mov ds,ax
+     86	0006  8B EC				     mov bp,sp
+     87	0008  B4 09				     mov ah,09h
+     88	000A  8B 56 06				     mov dx,6[bp]
+     89	000D  CD 21				     int 21h
+     90	000F  58				     pop ax
+     91	0010  CA 0002				     ret 2*1
+     92	0013				     imprimirMensaje EndP
+     93
+     94	0013				     impresiones Proc Far
+     95						     Assume ds:Datos
+     96
+     97	0013  B8 0000s				     mov ax,Datos
+     98	0016  8E D8				     mov ds,ax
+     99						     imprimeString Mensaje
+1   100	0018  B4 09			     mov ah,09h
+1   101	001A  BA 0000r			     mov dx,offset Mensaje
+1   102	001D  CD 21			     int 21h
+    103						     imprimeString Otro
+1   104	001F  B4 09			     mov ah,09h
+1   105	0021  BA 0069r			     mov dx,offset Otro
+1   106	0024  CD 21			     int 21h
+    107						     LeeCaracter DelTeclado
+1   108	0026  B4 01			     mov ah,01h
+1   109	0028  CD 21			     int 21h
+1   110	002A  A2 0067r			     mov DelTeclado,al
+    111	002D  80 3E 0067r 79			     cmp delteclado,'y'
+    112
+    113	0032  58				     pop ax	  ;obtengo el tope conteniendo el seg del ret
+    114	0033  5B				     pop bx	      ;obtengo el tope continiendo el oofset de	ret.
+Turbo Assembler	 Version 4.1	    10/16/20 19:04:31	    Page 3
+sextot.ASM
+
+
+
+    115	0034  9C				     pushf	  ;meto	el parametro a mi conveniensa
+    116	0035  53				     push bx	  ;y preparo la	direcc de retorno con la pila
+    117	0036  50				     push ax	  ;ordenada como yo queria
+    118
+    119	0037  CB				     ret
+    120	0038				     impresiones EndP
+    121
+    122
+    123	0038			     Codigo2 EndS
+    124
+    125	0000			     Codigo Segment para public	'Code'	;Define	el segmento de código para tasm.
+    126
+    127	      =000E			 Amarrilo EQU 14d
+    128	0000  00			 ColIzq	db 0
+    129	0001  00			 FilIzq	db 0
+    130	0002  4F			 ColDer	db 79
+    131	0003  18			 FilDer	db 24
+    132	0004  0E			 Atri db Amarrilo
+    133
+    134
+    135					  Assume cs:Codigo, ds:Datos
+    136
+    137	0005				  Inicio:
+    138
+    139	0005  B8 0000s			      mov ax,Datos;Mueve la posición de SData al reg ax.
+    140	0008  8E D8			      mov      DS,ax	       ;Mueve la posición de ax (SData) al reg	DS.
+    141					      limpiarPantalla FilIzq,ColIzq,FilDer,ColDer,Atri
+1   142	000A  B8 0619			     mov ax,0619h
+1   143	000D  2E: 8A 2E	0001r		     mov ch,FilIzq
+1   144	0012  2E: 8A 0E	0000r		     mov cl,ColIzq
+1   145	0017  2E: 8A 36	0003r		     mov dh,FilDer
+1   146	001C  2E: 8A 3E	0004r		     mov bh,Atri
+1   147	0021  CD 10			     int 10h
+    148					      imprimeString Mensaje
+1   149	0023  B4 09			     mov ah,09h
+1   150	0025  BA 0000r			     mov dx,offset Mensaje
+1   151	0028  CD 21			     int 21h
+    152
+    153	002A  50			      push ax
+    154	002B				      Pedir:
+    155						      LeeCaracter DelTeclado
+1   156	002B  B4 01			     mov ah,01h
+1   157	002D  CD 21			     int 21h
+1   158	002F  A2 0067r			     mov DelTeclado,al
+    159
+    160	0032  33 C0				      xor ax,ax
+    161	0034  A0 0067r				      mov al,DelTeclado
+    162	0037  2C 30				      sub al,30h
+    163	0039  51				      push cx
+    164	003A  33 C9					     xor cx,cx
+    165	003C  B1 0A					     mov cl,10d
+    166	003E						     cicloN:
+    167	003E  3A C8						     cmp cl,al
+    168	0040  74 0B						     jz	siEsNum
+    169	0042  E2 FA					     loop cicloN
+    170							     imprimeString noNumero
+1   171	0044  B4 09			     mov ah,09h
+Turbo Assembler	 Version 4.1	    10/16/20 19:04:31	    Page 4
+sextot.ASM
+
+
+
+1   172	0046  BA 002Br			     mov dx,offset noNumero
+1   173	0049  CD 21			     int 21h
+    174	004B  75 DE					     jnz Pedir
+    175	004D						     siEsNum:
+    176
+    177	004D  59					      pop cx
+    178	004E  F6 26 0068r			      mul multiplicador
+    179	0052  A2 0067r				      mov DelTeclado,al
+    180	0055  FF 36 0067r			      push word	ptr DelTeclado
+    181						      LeeCaracter DelTeclado
+1   182	0059  B4 01			     mov ah,01h
+1   183	005B  CD 21			     int 21h
+1   184	005D  A2 0067r			     mov DelTeclado,al
+    185
+    186	0060  8F 06 0067r			      pop word ptr DelTeclado
+    187	0064  2C 30				      sub al,30h
+    188	0066  51				      push cx
+    189	0067  33 C9					     xor cx,cx
+    190	0069  B1 0A					     mov cl,10d
+    191	006B						     cicloN2:
+    192	006B  3A C8						     cmp cl,al
+    193	006D  74 0B						     jz	siEsNum2
+    194	006F  E2 FA					     loop cicloN2
+    195							     imprimeString noNumero
+1   196	0071  B4 09			     mov ah,09h
+1   197	0073  BA 002Br			     mov dx,offset noNumero
+1   198	0076  CD 21			     int 21h
+    199	0078  75 B1					     jnz Pedir
+    200	007A						     siEsNum2:
+    201	007A  00 06 0067r			      add DelTeclado,al
+    202
+    203	007E  58				      pop ax
+    204
+    205					      ;	;-Estructuras basicas
+    206
+    207						      ;if -else
+    208	007F  80 3E 0067r 0E			       cmp DelTeclado,Amarrilo
+    209	0084  74 09				       jz iguales
+    210						       imprimeString Noiguales
+1   211	0086  B4 09			     mov ah,09h
+1   212	0088  BA 000Dr			     mov dx,offset Noiguales
+1   213	008B  CD 21			     int 21h
+    214	008D  EB 07				       jmp short saleif
+    215
+    216	008F					       iguales:
+    217							     imprimeString Siiguales
+1   218	008F  B4 09			     mov ah,09h
+1   219	0091  BA 001Cr			     mov dx,offset Siiguales
+1   220	0094  CD 21			     int 21h
+    221	0096					       saleif:
+    222						      ;-if
+    223
+    224						     ; ;-ciclos
+    225
+    226							     ;-ciclo1 loop
+    227							     ; push cx
+    228							     ; mov cx,10d
+Turbo Assembler	 Version 4.1	    10/16/20 19:04:31	    Page 5
+sextot.ASM
+
+
+
+    229							     ; ciclo:
+    230							     ;	     imprimeString Mensaje
+    231							     ; loop ciclo
+    232
+    233							     ; pop cx
+    234							     ;-ciclo1
+    235
+    236						     ;	     ;ciclo2 repeat
+    237						     ;	     ciclo2:
+    238						     ;		     LeeCaracter
+    239						     ;		     cmp DelTeclado,'a'
+    240						     ;	      jne ciclo2
+    241						     ;	     ;-ciclo2
+    242
+    243						     ; ciclo3 while
+    244							     ; call impresiones
+    245							     ; popf
+    246							     ; jnz siga
+    247							     ; ciclo3:
+    248							     ;	     call impresiones
+    249							     ;	     popf
+    250							     ; je ciclo3
+    251							     ;-ciclo3
+    252
+    253						     ;-ciclos
+    254						  ;-Estructuras	basicas
+    255						  ;siga:
+    256						  ; mov	dx,offset Mensaje
+    257						  ; push dx
+    258						  ; call imprimirMensaje
+    259						  ;
+    260
+    261	0096  B8 4C00				  mov ax,4c00h
+    262	0099  CD 21				  int 21h
+    263	009B			     Codigo EndS			;Fin del segmento de código.
+    264					  End Inicio			;Fin del programa la etiqueta al final dice en que punto    +
+    265				     debe comenzar el programa.
+Turbo Assembler	 Version 4.1	    10/16/20 19:04:31	    Page 6
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "10/16/20"
+??FILENAME			  Text	 "sextot  "
+??TIME				  Text	 "19:04:30"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODIGO
+@FILENAME			  Text	 SEXTOT
+@WORDSIZE			  Text	 2
+AMARRILO			  Number 000E
+ATRI				  Byte	 CODIGO:0004
+CICLON				  Near	 CODIGO:003E
+CICLON2				  Near	 CODIGO:006B
+COLDER				  Byte	 CODIGO:0002
+COLIZQ				  Byte	 CODIGO:0000
+DELTECLADO			  Byte	 DATOS:0067
+FILDER				  Byte	 CODIGO:0003
+FILIZQ				  Byte	 CODIGO:0001
+IGUALES				  Near	 CODIGO:008F
+IMPRESIONES			  Far	 CODIGO2:0013
+IMPRIMIRMENSAJE			  Far	 CODIGO2:0000
+INICIO				  Near	 CODIGO:0005
+MENSAJE				  Byte	 DATOS:0000
+MULTIPLICADOR			  Byte	 DATOS:0068
+NOIGUALES			  Byte	 DATOS:000D
+NONUMERO			  Byte	 DATOS:002B
+OTRO				  Byte	 DATOS:0069
+PEDIR				  Near	 CODIGO:002B
+SALEIF				  Near	 CODIGO:0096
+SIESNUM				  Near	 CODIGO:004D
+SIESNUM2			  Near	 CODIGO:007A
+SIIGUALES			  Byte	 DATOS:001C
+SINUMERO			  Byte	 DATOS:0056
+VARIA				  Byte	 DATOS2:0000
+
+Macro Name
+
+IMPRIMESTRING
+LEECARACTER
+LIMPIARPANTALLA
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODIGO				  16  009B Para	  Public  CODE
+CODIGO2				  16  0038 Para	  none
+DATOS				  16  007E Para	  none	  DATA
+DATOS2				  16  000C Para	  none
+

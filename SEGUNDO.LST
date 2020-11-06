@@ -1,0 +1,99 @@
+Turbo Assembler	 Version 4.1	    09/22/20 21:33:59	    Page 1
+segundo.ASM
+
+
+
+      1				     ;-------------------------------------------;
+      2				     ;Estructura de un programa	en ensamblador,	 ;
+      3				     ;para arquitectura	8086/8088/80306	mips	 ;
+      4				     ;Creado por: Ing. Carlos Benavides	C. MsC.	 ;
+      5				     ;Propósito: Docente, académico, ejemplo.	   ;
+      6				     ;Forma de compilación:			  ;
+      7				     ;	Usando el turbo	assembler de borland 4.	 ;
+      8				     ;	  tasm /zi /l priemro[.asm]		 ;
+      9				     ;	  tlink	/v primero[.oobj]		 ;
+     10				     ;						 ;
+     11				     ; y si lo quiere depurar turbo debuger	 ;
+     12				     ;						 ;
+     13				     ;	    td primero[.exe]			 ;
+     14				     ; FUM: Mayo 16, 2003.			 ;
+     15				     ;-------------------------------------------;
+     16
+     17	0000			     SSeg Segment para Stack 'Stack'
+     18
+     19	0000  40*(53 65	67 53 74  +	  db 64	Dup ('SegStack ')
+     20	      61 63 6B 20)
+     21
+     22	0240			     SSeg EndS
+     23
+     24	0000			     SData Segment para	'Data'
+     25
+     26	0000  48 6F 6C 61 20 4D	75+	  Message db 'Hola Mundo $'
+     27	      6E 64 6F 20 24
+     28
+     29	000C			     SData EndS
+     30
+     31	0000			     CSeg Segment para public 'Code' ;Define el	segmento de código para tasm.
+     32	0000			      Begin:
+     33					   Assume CS:CSeg, SS:SSeg   ;Asignación de los segmentos a los registro de segmentos del  +
+     34				     CPU.
+     35
+     36							     ;Va a reservar la dirección del PSP en el	ES.
+     37	0000  50			    push   ax		     ;Guarda el	desplazamiento cero en la pila.
+     38	0001  33 C0			    xor	   ax,ax	     ;Pone en cero al reg ax.
+     39
+     40	0003  B8 0000s			    mov	   ax,SData	     ;Mueve la posición de SData al reg ax.
+     41	0006  8E D8			    mov	   DS,ax	     ;Mueve la posición de ax (SData) al reg DS.
+     42	0008  58				pop    ax
+     43
+     44	0009  B8 0003				mov ax,0003h
+     45	000C  CD 10			    int	10h
+     46
+     47	000E  50			    push   ax		      ;Guarda el valor del ax para ser usado por la int.
+     48	000F  33 C0			    xor	   ax,ax	      ;limpia el valor del ax y	lo prepara para	la interrupción.
+     49	0011  BA 0000r			    lea	   dx,Message	      ;Coloca la dirección del	desplazamiento de la etiqueta	    +
+     50				     DS:Message
+     51	0014  B4 09			    mov	   ah,09	      ;parámetro 09 del servicio de int 21 (imprimir en pantalla   +
+     52				     cadena terminada en $)
+     53	0016  CD 21			    int	   21h		      ;ejecute la interrupción, e imprima en pantalla.
+     54	0018  58			    pop	   ax		      ;equilibre la pila, saque	y restaure al ax.
+     55
+     56	0019  B4 00			    mov	ah,00
+     57	001B  CD 16				int 16h
+Turbo Assembler	 Version 4.1	    09/22/20 21:33:59	    Page 2
+segundo.ASM
+
+
+
+     58
+     59	001D  33 C0			    xor	ax,ax		     ;Limpia el	al y prepara el	ah para	la salida.
+     60	001F  B8 4C00			    mov	ax,4c00h     ;Servicio AH=4c int 21h para salir	del programa.
+     61	0022  CD 21			    int	21h		     ;Llamada al DOS. Termine el programa.
+     62	0024			     CSeg EndS			     ;Fin del segmento de código.
+     63					  End Begin		     ;Fin del programa la etiqueta al final dice en que	punto debe  +
+     64				     comenzar el programa.
+Turbo Assembler	 Version 4.1	    09/22/20 21:33:59	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "09/22/20"
+??FILENAME			  Text	 "segundo "
+??TIME				  Text	 "21:33:59"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CSEG
+@FILENAME			  Text	 SEGUNDO
+@WORDSIZE			  Text	 2
+BEGIN				  Near	 CSEG:0000
+MESSAGE				  Byte	 SDATA:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CSEG				  16  0024 Para	  Public  CODE
+SDATA				  16  000C Para	  none	  DATA
+SSEG				  16  0240 Para	  Stack	  STACK
+
