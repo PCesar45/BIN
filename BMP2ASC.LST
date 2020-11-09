@@ -1,0 +1,61 @@
+Turbo Assembler	 Version 4.1	    11/09/20 11:55:40	    Page 1
+bmp2asc.ASM
+
+
+
+      1				     ;Examen1 de arquitectura de computadores
+      2				     extrn PonerModoVideo    :far
+      3	0000			     Datos Segment para	public 'Datos'
+      4					     extrn TipoVideo :byte
+      5	0000			     Datos EndS
+      6
+      7				     ;----------------------------
+      8	0000			     Codigo Segment
+      9				     Assume cs:Codigo ,	ds:Datos
+     10
+     11	0000			     Inicio:
+     12	0000  B8 0000s			     mov ax,Datos
+     13	0003  8E D8			     mov ds,ax
+     14
+     15	0005  C6 06 0000e 12		     mov TipoVideo,18
+     16	000A  9A 00000000se		     call PonerModoVideo
+     17
+     18					     ;Espera que le de enter  para salirse
+     19	000F  B4 01			     mov ah,01h
+     20	0011  CD 21			     int 21h
+     21	0013  32 E4			     xor ah,ah
+     22
+     23	0015  C6 06 0000e 03		     mov TipoVideo,3
+     24	001A  9A 00000000se		     call PonerModoVideo
+     25
+     26
+     27	001F  B8 4C00			 mov ax,4c00h
+     28	0022  CD 21			     int 21h
+     29
+     30	0024			      Codigo EndS
+     31					     End Inicio
+Turbo Assembler	 Version 4.1	    11/09/20 11:55:40	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "11/09/20"
+??FILENAME			  Text	 "bmp2asc "
+??TIME				  Text	 "11:55:40"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODIGO
+@FILENAME			  Text	 BMP2ASC
+@WORDSIZE			  Text	 2
+INICIO				  Near	 CODIGO:0000
+PONERMODOVIDEO			  Far	 ----:---- Extern
+TIPOVIDEO			  Byte	 DATOS:---- Extern
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODIGO				  16  0024 Para	  none
+DATOS				  16  0000 Para	  Public  DATOS
+
