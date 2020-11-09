@@ -1,27 +1,155 @@
+; segmento de datos publicos y compartidos con otros programas
 
+public ClearScreen 
+public PrintfS
+public PrintfC
+public GotoXY
+public WhereXY
+public PrintHex
+public LeerChar
+
+valorParametros equ 2
+ProceFar        equ 2
+ProceNear       equ 0
       
+Datos Segment para public 'Datos'
+ extrn columnaT :Byte
+ extrn filaT    :Byte
+ extrn filaG	:Word
+ extrn columnaG :Word
 
-CodigoP1 Segment PARA 'Code'
+Procedimientos Segment
+	Assume cs:Procedimientos,ds:datos
 
-	Public GuardarPila
-	Assume CS:CodigoP1
-	
-	
-	GuardarPila Proc Far
-		;nesecita tener cargado el en el DI la ultima poscicion del PSP
-		Mov Bx, 2 ; posicion de donde va a iniciar a guardar a partir del 
-		Xor Cx, Cx ; para limpiar el registro
-		Xor Dx, Dx ;limpia el registro
-		
-		Mov Cl, Byte PTR[Bx+7Eh] ;Pone la cantidad que se va aguardar 
-		Dec Cx
-	GuardarAPila:
-		mov Dl, Byte PTR [Bx+80h]
-		push Byte PTR Dx
-		Inc Bx
-		loop GuardarAPila
-		
+ClearScreen Proc Far
+	   ;PushA			;Debe ser llamado afuera por el paso de parámetros.
+       mov       ah,07		;Prepara servicio 07 para la int 10h. (desplazamiento de ventana hacia abajo).
+       ;mov       al,25		;Número de líneas por desplazar en este caso total de filas 25.
+       ;mov       bh,TextColor	;Atributo con que se va a desplazar; es decir; color. 00 = negro.
+       ;mov       ch,00		;En donde comienza: fila de la esquina superior izquierda.
+       ;mov       cl,00		;En donde comienza: columna de la esquina superior izquierda.
+       ;mov       dh,25		;En donde termina:  fila de la esquina inferior derecha.
+       ;mov       dl,80		;En donde termina:  columna de la esquina inferior derecha.
+       int       10h		;ejecute la int 10h/ servicio 07h, desplaze la ventana hacia abajo.
+       ;PopA			;Debe ser llamado afuera por el paso de parámetros.
+       ret			;Se debe retornar o el programa se queda pegado.
+ClearScreen EndP
+
+PrintfS Proc Far
+	;lea       dx,String      ;Este parámetro debe ser pasado afuera. 
+       mov       ah,09          ;parámetro 09 del servicio de int 21 (imprimir en pantalla cadena terminada en $)
+       int       21h            ;ejecute la interrupción, e imprima en pantalla.
+       ret
+PrintfS EndP
+
+PrintfC Proc Far
+	;PushA     	        ;Debe ser llamado afuera por el paso de parámetros.
+       mov       ah,09          ;Servicio de int 21h / 02 imprimir un caracter en pantalla.
+       ;mov       dl,Caracter   ;Este parámetro debe ser pasado afuera.
+       mov       bh,00
+       ;mov       bl,Atributo   ;Este parámetro debe ser pasado afuera.
+       mov	 cx,1            
+       int       10h            ;ejecute la interrupción, e imprima en pantalla.
+       ;PopA     	    	;Debe ser llamado afuera por el paso de parámetros.
+       ret
+PrintfC EndP
+
+GotoXY Proc Far
+		mov ah,02
+		mov bh,00
+		mov dl,columnaT
+		mov dh,filaT
+		int 10h
 		ret
-	GuardarPila EndP
+GotoXY EndP
 
-CodigoP1 EndS
+
+WhereXY Proc Far 
+;------------------------------------------------------;
+;                Parámetros de entrada                 ;
+;------------------------------------------------------;
+;       bh,Atributo.                                   ;
+;------------------------------------------------------;
+;                 Parámetros de salida                 ;
+;------------------------------------------------------;
+;       dh,Fila.                                       ;
+;       dl,Columna.                                    ;
+;------------------------------------------------------;
+
+       ;PushA			;Debe ser llamado afuera por el paso de parámetros.
+       mov	 ah,03
+       ;mov	 bh,00
+       int	 10h
+       ;mov	 Col,dl
+       ;mov	 Fil,dh
+       ;PopA			;Debe ser llamado afuera por el paso de parámetros.
+       ret
+WhereXY EndP
+
+
+PrintHex Proc Far
+		;PushA			;Debe ser llamado afuera por el paso de parámetros.
+       ;mov       al,Numero
+       cmp       al,09h
+       jnle      hex 
+       ;PushA
+       push      ax		;Guarda los todos los registro en... 
+       push      bx		;...la pila del programa.
+       push      cx		;Preparación para rutinas
+       push      dx		;Debe tener cuidado de llamar a la...
+       push      si		;...siguiente macro (PopAllRegs) para...
+       push      di		;poner equilibrar la pila...
+       pushf
+       mov       bl,al
+       add       al,48
+       ;PushA
+       push      ax		;Guarda los todos los registro en... 
+       push      bx		;...la pila del programa.
+       push      cx		;Preparación para rutinas
+       push      dx		;Debe tener cuidado de llamar a la...
+       push      si		;...siguiente macro (PopAllRegs) para...
+       push      di		;poner equilibrar la pila...
+       pushf
+       call	 PrintfC
+       ;PopA
+       popf
+       pop       di		;...llamado antes a pushallregs.
+       pop       si		; Sino se produce un error en el programa.
+       pop       dx
+       pop       cx
+       pop       bx
+       pop       ax
+       jmp short exit 
+    hex: ;PushA
+       push      ax		;Guarda los todos los registro en... 
+       push      bx		;...la pila del programa.
+       push      cx		;Preparación para rutinas
+       push      dx		;Debe tener cuidado de llamar a la...
+       push      si		;...siguiente macro (PopAllRegs) para...
+       push      di		;poner equilibrar la pila...
+       pushf
+       mov       bl,al
+       add       al,55
+       call 	 PrintfC   
+	exit: ;PopA			;Debe ser llamado afuera por el paso de parámetros.
+	   popf
+	   pop       di		;...llamado antes a pushallregs.
+	   pop       si		; Sino se produce un error en el programa.
+	   pop       dx
+	   pop       cx
+	   pop       bx
+	   pop       ax
+	   ret
+PrintHex EndP
+
+LeerChar Proc Far
+	mov bp,sp
+	mov ah,01h
+	int 21h
+	xor ah,ah
+	mov Word ptr [bp+ProceFar+valorParametros*1],ax
+	ret
+LeerChar EndP
+
+Procedimientos EndS
+	 End

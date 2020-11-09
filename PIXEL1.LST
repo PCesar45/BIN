@@ -1,0 +1,94 @@
+Turbo Assembler	 Version 4.1	    11/08/20 21:31:54	    Page 1
+pixel1.ASM
+
+
+
+      1				     extrn LeerChar		     :far
+      2				     extrn GotoXY		     :far
+      3				     extrn PonerModoVideo    :far
+      4				     extrn PonerPixel	     :far
+      5
+      6	0000			     Datos Segment para	public 'Datos'
+      7				     public columnaT
+      8				     public filaT
+      9				     public colorPixel
+     10				     public columnag
+     11				     public filag
+     12
+     13				     extrn TipoVideo :byte
+     14
+     15	0000				     Coordenada	label Word
+     16	0000  ??				     filaT     db  ?
+     17	0001  ??				     columnaT  db  ?
+     18
+     19					     ;Coordenada label xxxxxxxxxxxxxxxxx
+     20	0002  ????				     filaG	dw   ?
+     21	0004  ????				     columnaG	dw   ?
+     22	0006  04				     colorPixel	db   4
+     23	0007			     Datos EndS
+     24				     ;----------------------------
+     25	0000			     Codigo Segment
+     26				     Assume cs:Codigo ,	ds:Datos
+     27
+     28	0000			     Inicio:
+     29	0000  B8 0000s			     mov ax,Datos
+     30	0003  8E D8			     mov ds,ax
+     31
+     32	0005  C6 06 0000e 12		     mov TipoVideo,18
+     33	000A  9A 00000000se		     call PonerModoVideo
+     34
+     35	000F  C7 06 0002r 0064		     mov filag,100
+     36	0015  C7 06 0004r 0032		     mov columnag,50
+     37	001B  B9 00FA			     mov cx,250
+     38	001E			       otropixel:
+     39	001E  51			     push cx
+     40	001F  9A 00000000se		     call PonerPixel
+     41	0024  59			     pop cx
+     42	0025  FF 06 0004r		     inc columnag
+     43	0029  FF 06 0002r		     inc filag
+     44	002D  E2 EF		       loop otropixel
+     45
+     46	002F  9A 00000000se		     call LeerChar
+     47
+     48	0034  C6 06 0000e 03		     mov TipoVideo,3
+     49	0039  9A 00000000se		     call PonerModoVideo
+     50
+     51	003E  B8 4C00			     mov ax,4c00h
+     52	0041  CD 21			     int 21h
+     53	0043			      Codigo EndS
+     54					     End Inicio
+Turbo Assembler	 Version 4.1	    11/08/20 21:31:54	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "11/08/20"
+??FILENAME			  Text	 "pixel1  "
+??TIME				  Text	 "21:31:54"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODIGO
+@FILENAME			  Text	 PIXEL1
+@WORDSIZE			  Text	 2
+COLORPIXEL			  Byte	 DATOS:0006
+COLUMNAG			  Word	 DATOS:0004
+COLUMNAT			  Byte	 DATOS:0001
+COORDENADA			  Word	 DATOS:0000
+FILAG				  Word	 DATOS:0002
+FILAT				  Byte	 DATOS:0000
+GOTOXY				  Far	 ----:---- Extern
+INICIO				  Near	 CODIGO:0000
+LEERCHAR			  Far	 ----:---- Extern
+OTROPIXEL			  Near	 CODIGO:001E
+PONERMODOVIDEO			  Far	 ----:---- Extern
+PONERPIXEL			  Far	 ----:---- Extern
+TIPOVIDEO			  Byte	 DATOS:---- Extern
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODIGO				  16  0043 Para	  none
+DATOS				  16  0007 Para	  Public  DATOS
+

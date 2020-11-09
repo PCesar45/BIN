@@ -1,0 +1,220 @@
+Turbo Assembler	 Version 4.1	    11/08/20 21:33:47	    Page 1
+proc.ASM
+
+
+
+      1				     ; segmento	de datos publicos y compartidos	con otros programas
+      2
+      3				     public ClearScreen
+      4				     public PrintfS
+      5				     public PrintfC
+      6				     public GotoXY
+      7				     public WhereXY
+      8				     public PrintHex
+      9				     public LeerChar
+     10
+     11	      =0002		     valorParametros equ 2
+     12	      =0002		     ProceFar	     equ 2
+     13	      =0000		     ProceNear	     equ 0
+     14
+     15	0000			     Datos Segment para	public 'Datos'
+     16				      extrn columnaT :Byte
+     17				      extrn filaT    :Byte
+     18				      extrn filaG    :Word
+     19				      extrn columnaG :Word
+     20
+     21	0000			     Procedimientos Segment
+     22					     Assume cs:Procedimientos,ds:datos
+     23
+     24	0000			     ClearScreen Proc Far
+     25						;PushA			     ;Debe ser llamado afuera por el paso de parámetros.
+     26	0000  B4 07			    mov	      ah,07	     ;Prepara servicio 07 para la int 10h. (desplazamiento de	    +
+     27				     ventana hacia abajo).
+     28					    ;mov       al,25	     ;Número de líneas por desplazar en este caso total de filas  +
+     29				     25.
+     30					    ;mov       bh,TextColor  ;Atributo con que se va a desplazar; es decir; color. 00 =	    +
+     31				     negro.
+     32					    ;mov       ch,00	     ;En donde comienza: fila de la esquina superior izquierda.
+     33					    ;mov       cl,00	     ;En donde comienza: columna de la esquina superior	izquierda.
+     34					    ;mov       dh,25	     ;En donde termina:	 fila de la esquina inferior derecha.
+     35					    ;mov       dl,80	     ;En donde termina:	 columna de la esquina inferior	derecha.
+     36	0002  CD 10			    int	      10h	     ;ejecute la int 10h/ servicio 07h,	desplaze la ventana hacia   +
+     37				     abajo.
+     38					    ;PopA		     ;Debe ser llamado afuera por el paso de parámetros.
+     39	0004  CB			    ret			     ;Se debe retornar o el programa se	queda pegado.
+     40	0005			     ClearScreen EndP
+     41
+     42	0005			     PrintfS Proc Far
+     43					     ;lea	dx,String      ;Este parámetro	debe ser pasado	afuera.
+     44	0005  B4 09			    mov	      ah,09	     ;parámetro 09 del	servicio de int	21 (imprimir en	pantalla    +
+     45				     cadena terminada en $)
+     46	0007  CD 21			    int	      21h	     ;ejecute la interrupción,	e imprima en pantalla.
+     47	0009  CB			    ret
+     48	000A			     PrintfS EndP
+     49
+     50	000A			     PrintfC Proc Far
+     51					     ;PushA		     ;Debe ser llamado afuera por el paso de parámetros.
+     52	000A  B4 09			    mov	      ah,09	     ;Servicio de int 21h / 02 imprimir	un caracter en pantalla.
+     53					    ;mov       dl,Caracter   ;Este parámetro debe ser pasado afuera.
+     54	000C  B7 00			    mov	      bh,00
+     55					    ;mov       bl,Atributo   ;Este parámetro debe ser pasado afuera.
+     56	000E  B9 0001			    mov	      cx,1
+     57	0011  CD 10			    int	      10h	     ;ejecute la interrupción,	e imprima en pantalla.
+Turbo Assembler	 Version 4.1	    11/08/20 21:33:47	    Page 2
+proc.ASM
+
+
+
+     58					    ;PopA		     ;Debe ser llamado afuera por el paso de parámetros.
+     59	0013  CB			    ret
+     60	0014			     PrintfC EndP
+     61
+     62	0014			     GotoXY Proc Far
+     63	0014  B4 02				     mov ah,02
+     64	0016  B7 00				     mov bh,00
+     65	0018  8A 16 0000e			     mov dl,columnaT
+     66	001C  8A 36 0000e			     mov dh,filaT
+     67	0020  CD 10				     int 10h
+     68	0022  CB				     ret
+     69	0023			     GotoXY EndP
+     70
+     71
+     72	0023			     WhereXY Proc Far
+     73				     ;------------------------------------------------------;
+     74				     ;		      Parámetros de entrada		     ;
+     75				     ;------------------------------------------------------;
+     76				     ;	     bh,Atributo.				    ;
+     77				     ;------------------------------------------------------;
+     78				     ;		       Parámetros de salida		     ;
+     79				     ;------------------------------------------------------;
+     80				     ;	     dh,Fila.					    ;
+     81				     ;	     dl,Columna.				    ;
+     82				     ;------------------------------------------------------;
+     83
+     84					    ;PushA		     ;Debe ser llamado afuera por el paso de parámetros.
+     85	0023  B4 03			    mov	      ah,03
+     86					    ;mov      bh,00
+     87	0025  CD 10			    int	      10h
+     88					    ;mov      Col,dl
+     89					    ;mov      Fil,dh
+     90					    ;PopA		     ;Debe ser llamado afuera por el paso de parámetros.
+     91	0027  CB			    ret
+     92	0028			     WhereXY EndP
+     93
+     94
+     95	0028			     PrintHex Proc Far
+     96						     ;PushA		     ;Debe ser llamado afuera por el paso de parámetros.
+     97					    ;mov       al,Numero
+     98	0028  3C 09			    cmp	      al,09h
+     99	002A  7F 1F			    jnle      hex
+    100					    ;PushA
+    101	002C  50			    push      ax	     ;Guarda los todos los registro en...
+    102	002D  53			    push      bx	     ;...la pila del programa.
+    103	002E  51			    push      cx	     ;Preparación para	rutinas
+    104	002F  52			    push      dx	     ;Debe tener cuidado de llamar a la...
+    105	0030  56			    push      si	     ;...siguiente macro (PopAllRegs) para...
+    106	0031  57			    push      di	     ;poner equilibrar la pila...
+    107	0032  9C			    pushf
+    108	0033  8A D8			    mov	      bl,al
+    109	0035  04 30			    add	      al,48
+    110					    ;PushA
+    111	0037  50			    push      ax	     ;Guarda los todos los registro en...
+    112	0038  53			    push      bx	     ;...la pila del programa.
+    113	0039  51			    push      cx	     ;Preparación para	rutinas
+    114	003A  52			    push      dx	     ;Debe tener cuidado de llamar a la...
+Turbo Assembler	 Version 4.1	    11/08/20 21:33:47	    Page 3
+proc.ASM
+
+
+
+    115	003B  56			    push      si	     ;...siguiente macro (PopAllRegs) para...
+    116	003C  57			    push      di	     ;poner equilibrar la pila...
+    117	003D  9C			    pushf
+    118	003E  0E E8 FFC8		    call      PrintfC
+    119					    ;PopA
+    120	0042  9D			    popf
+    121	0043  5F			    pop	      di	     ;...llamado antes a pushallregs.
+    122	0044  5E			    pop	      si	     ; Sino se produce un error	en el programa.
+    123	0045  5A			    pop	      dx
+    124	0046  59			    pop	      cx
+    125	0047  5B			    pop	      bx
+    126	0048  58			    pop	      ax
+    127	0049  EB 0F			    jmp	short exit
+    128	004B				 hex: ;PushA
+    129	004B  50			    push      ax	     ;Guarda los todos los registro en...
+    130	004C  53			    push      bx	     ;...la pila del programa.
+    131	004D  51			    push      cx	     ;Preparación para	rutinas
+    132	004E  52			    push      dx	     ;Debe tener cuidado de llamar a la...
+    133	004F  56			    push      si	     ;...siguiente macro (PopAllRegs) para...
+    134	0050  57			    push      di	     ;poner equilibrar la pila...
+    135	0051  9C			    pushf
+    136	0052  8A D8			    mov	      bl,al
+    137	0054  04 37			    add	      al,55
+    138	0056  0E E8 FFB0		    call      PrintfC
+    139	005A				     exit: ;PopA		     ;Debe ser llamado afuera por el paso de parámetros.
+    140	005A  9D				popf
+    141	005B  5F				pop	  di	     ;...llamado antes a pushallregs.
+    142	005C  5E				pop	  si	     ; Sino se produce un error	en el programa.
+    143	005D  5A				pop	  dx
+    144	005E  59				pop	  cx
+    145	005F  5B				pop	  bx
+    146	0060  58				pop	  ax
+    147	0061  CB				ret
+    148	0062			     PrintHex EndP
+    149
+    150	0062			     LeerChar Proc Far
+    151	0062  8B EC			     mov bp,sp
+    152	0064  B4 01			     mov ah,01h
+    153	0066  CD 21			     int 21h
+    154	0068  32 E4			     xor ah,ah
+    155	006A  89 46 04			     mov Word ptr [bp+ProceFar+valorParametros*1],ax
+    156	006D  CB			     ret
+    157	006E			     LeerChar EndP
+    158
+    159	006E			     Procedimientos EndS
+    160					      End
+*Warning* proc.ASM(155)	Open segment: DATOS
+Turbo Assembler	 Version 4.1	    11/08/20 21:33:47	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "11/08/20"
+??FILENAME			  Text	 "proc	  "
+??TIME				  Text	 "21:33:47"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 DATOS
+@FILENAME			  Text	 PROC
+@WORDSIZE			  Text	 2
+CLEARSCREEN			  Far	 PROCEDIMIENTOS:0000
+COLUMNAG			  Word	 DATOS:---- Extern
+COLUMNAT			  Byte	 DATOS:---- Extern
+EXIT				  Near	 PROCEDIMIENTOS:005A
+FILAG				  Word	 DATOS:---- Extern
+FILAT				  Byte	 DATOS:---- Extern
+GOTOXY				  Far	 PROCEDIMIENTOS:0014
+HEX				  Near	 PROCEDIMIENTOS:004B
+LEERCHAR			  Far	 PROCEDIMIENTOS:0062
+PRINTFC				  Far	 PROCEDIMIENTOS:000A
+PRINTFS				  Far	 PROCEDIMIENTOS:0005
+PRINTHEX			  Far	 PROCEDIMIENTOS:0028
+PROCEFAR			  Number 0002
+PROCENEAR			  Number 0000
+VALORPARAMETROS			  Number 0002
+WHEREXY				  Far	 PROCEDIMIENTOS:0023
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DATOS				  16  0000 Para	  Public  DATOS
+PROCEDIMIENTOS			  16  006E Para	  none
+Turbo Assembler	 Version 4.1	    11/08/20 21:33:47	    Page 5
+Error Summary
+
+
+
+*Warning* proc.ASM(155)	Open segment: DATOS
+

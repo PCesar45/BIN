@@ -1,0 +1,207 @@
+Turbo Assembler	 Version 4.1	    11/08/20 21:38:13	    Page 1
+lib-grf.ASM
+
+
+
+      1				     include macros.asm
+1     2
+1     3				     ;-------------------------------;
+1     4				     ;	   Definición de Macros	     ;
+1     5				     ;(afuera del segmento de código);
+1     6				     ;-------------------------------;
+1     7
+1     8				     PushA Macro
+1     9					    push      ax	     ;Guarda los todos los registro en...
+1    10					    push      bx	     ;...la pila del programa.
+1    11					    push      cx	     ;Preparación para rutinas
+1    12					    push      dx	     ;Debe tener cuidado de llamar a la...
+1    13					    push      si	     ;...siguiente macro (PopAllRegs) para...
+1    14					    push      di	     ;poner equilibrar la pila...
+1    15					    push      bp	     ;...sino lo hace el programa se cae...
+1    16					    push      sp	     ;...y da un error.
+1    17					    push      ds	     ;Note que el último elemento del pushallregs...
+1    18					    push      es	     ;...es el primer elemento en salir	en popallregs.
+1    19					    push      ss
+1    20					    pushf		     ;Guarda el	registro de banderas en	la pila.
+1    21				     EndM			     ;Su contra	parte es la macro siguiente.
+1    22
+1    23				     PopA Macro
+1    24					    popf		     ;...la pila del programa.
+1    25					    pop	      ss	     ;Esto se hace después de la llamada a una rutina
+1    26					    pop	      es	     ;Debe tener cuidado de llamar a esta...
+1    27					    pop	      ds	     ;...macro (PopAllRegs) para...
+1    28					    pop	      sp	     ;poner equilibrar la pila...
+1    29					    pop	      bp	     ;...solamente después de haber...
+1    30					    pop	      di	     ;...llamado antes a pushallregs.
+1    31					    pop	      si	     ; Sino se produce un error	en el programa.
+1    32					    pop	      dx
+1    33					    pop	      cx
+1    34					    pop	      bx
+1    35					    pop	      ax
+1    36				     EndM
+1    37
+1    38				     ClearScreen Macro TextColor
+1    39					    PushA
+1    40					    mov	      ah,07	     ;Prepara servicio 07 para la int 10h. (desplazamiento de	    +
+     41				     ventana hacia abajo).
+1    42					    mov	      al,25	     ;Número de	líneas por desplazar en	este caso total	de filas 25.
+1    43					    mov	      bh,TextColor   ;Atributo con que se va a desplazar; es decir; color. 00 =	    +
+     44				     negro.
+1    45					    mov	      ch,00	     ;En donde comienza: fila de la esquina superior izquierda.
+1    46					    mov	      cl,00	     ;En donde comienza: columna de la esquina superior	izquierda.
+1    47					    mov	      dh,25	     ;En donde termina:	 fila de la esquina inferior derecha.
+1    48					    mov	      dl,80	     ;En donde termina:	 columna de la esquina inferior	derecha.
+1    49					    int	      10h	     ;ejecute la int 10h/ servicio 07h,	desplaze la ventana hacia   +
+     50				     abajo.
+1    51					    PopA
+1    52				     EndM
+1    53
+1    54				     PrintfS Macro String
+1    55					    lea	      dx,String	     ;Coloca la	dirección del desplazamiento de	la etiqueta	    +
+     56				     DS:Message
+1    57					    mov	      ah,09	     ;parámetro	09 del servicio	de int 21 (imprimir en pantalla	    +
+Turbo Assembler	 Version 4.1	    11/08/20 21:38:13	    Page 2
+lib-grf.ASM
+
+
+
+     58				     cadena terminada en $)
+1    59					    int	      21h	     ;ejecute la interrupción, e imprima en pantalla.
+1    60				     EndM
+1    61
+1    62				     PrintfC Macro Caracter, Atributo
+1    63					    PushA		     ;Guarde todos los registros.
+1    64					    mov	      ah,09	     ;Servicio de int 21h / 02 imprimir	un caracter en pantalla.
+1    65					    mov	      dl,Caracter    ;Caracter Ascii a imprimir.
+1    66					    mov	      bh,00
+1    67					    mov	      bl,Atributo
+1    68					    and	      bl,00001111b
+1    69					    mov	      cx,1
+1    70					    int	      10h	     ;ejecute la interrupción, e imprima en pantalla.
+1    71					    PopA		     ;Saque todos los registros.
+1    72				     EndM
+1    73
+1    74				     GotoXY Macro X,Y
+1    75					    PushA
+1    76					    mov	      ah,02
+1    77					    mov	      bh,00
+1    78					    mov	      dl,X
+1    79					    mov	      dh,Y
+1    80					    int	      10h
+1    81					    PopA
+1    82				     EndM
+1    83
+1    84				     WhereXY Macro
+1    85					    PushA
+1    86					    mov	      ah,03
+1    87					    mov	      bh,00
+1    88					    int	      10h
+1    89					    mov	      Col,dl
+1    90					    mov	      Fil,dh
+1    91					    PopA
+1    92				     EndM
+1    93
+1    94				     PrintHex Macro Numero
+1    95					    local     hex, exit
+1    96					    PushA
+1    97					    mov	      al,Numero
+1    98					    cmp	      al,09h
+1    99					    jnle      hex
+1   100					    add	      al,48
+1   101					    PrintfC   al,Numero
+1   102					    jmp	short exit
+1   103				       hex: add	      al,55
+1   104					    PrintfC   al,Numero
+1   105				      exit: PopA
+1   106				     EndM
+1   107
+    108
+    109				     public PonerModoVideo
+    110				     ;public PonerCoordenada
+    111				     public PonerPixel
+    112				     Public TipoVideo
+    113
+    114	      =0002		     valorParametros equ 2
+Turbo Assembler	 Version 4.1	    11/08/20 21:38:13	    Page 3
+lib-grf.ASM
+
+
+
+    115	      =0002		     ProceFar	     equ 2
+    116	      =0000		     ProceNear	     equ 0
+    117
+    118	0000			     Datos Segment para	public 'Datos'
+    119				      extrn filaG	:word
+    120				      extrn columnaG	:word
+    121				      extrn colorPixel	:byte
+    122
+    123	0000  ??			     TipoVideo db ?
+    124	0001			     Datos EndS
+    125
+    126	0000			     Codigo segment
+    127				      Assume cs:Codigo , ds:Datos
+    128
+    129	0000			      PonerModoVideo Proc far
+    130					     ;inicializa modo de video
+    131	0000  B4 00			     mov ah,00h
+    132	0002  A0 0000r			     mov al,TipoVideo
+    133	0005  CD 10			     int 10h
+    134	0007  CB			     ret
+    135	0008			     PonerModoVideo EndP
+    136
+    137				     ;PonerCoordenada Proc Far
+    138				     ;PonerCoordenada EndP
+    139
+    140	0008			     PonerPixel	Proc Far
+    141	0008  B4 0C			     mov ah,0ch
+    142	000A  A0 0000e			     mov al,colorPixel
+    143	000D  32 FF			     xor bh,bh
+    144	000F  8B 0E 0000e		     mov cx,filag
+    145	0013  CD 10			     int 10h
+    146	0015  CB			     ret
+    147	0016			     PonerPixel	EndP
+    148
+    149	0016			     Codigo EndS
+    150				     End
+Turbo Assembler	 Version 4.1	    11/08/20 21:38:13	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "11/08/20"
+??FILENAME			  Text	 "lib-grf "
+??TIME				  Text	 "21:38:13"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODIGO
+@FILENAME			  Text	 LIB-GRF
+@WORDSIZE			  Text	 2
+COLORPIXEL			  Byte	 DATOS:---- Extern
+COLUMNAG			  Word	 DATOS:---- Extern
+FILAG				  Word	 DATOS:---- Extern
+PONERMODOVIDEO			  Far	 CODIGO:0000
+PONERPIXEL			  Far	 CODIGO:0008
+PROCEFAR			  Number 0002
+PROCENEAR			  Number 0000
+TIPOVIDEO			  Byte	 DATOS:0000
+VALORPARAMETROS			  Number 0002
+
+Macro Name
+
+CLEARSCREEN
+GOTOXY
+POPA
+PRINTFC
+PRINTFS
+PRINTHEX
+PUSHA
+WHEREXY
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODIGO				  16  0016 Para	  none
+DATOS				  16  0001 Para	  Public  DATOS
+

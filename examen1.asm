@@ -1,1 +1,0 @@
-;Examen1 de arqui

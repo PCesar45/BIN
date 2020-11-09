@@ -1,0 +1,90 @@
+Turbo Assembler	 Version 4.1	    11/06/20 18:05:09	    Page 1
+video.ASM
+
+
+
+      1				     ;----------------------------------------
+      2	0000			     Pila Segment
+      3	0000  0FFF*(??)			     db	0fffh dup (?)
+      4	0FFF			     Pila Ends
+      5				     ;-------------------------------------------
+      6	0000			     Datos Segment
+      7	0000  54 65 78 74 6F 20	61+	     texto db "Texto a imprimir"
+      8	      20 69 6D 70 72 69	6D+
+      9	      69 72
+     10	0010  01 02 03 0A 0D 41	42		       db 1,2,3,10,13,65,66
+     11	0017  24				       db '$'
+     12	0018			     Datos Ends
+     13
+     14	0000			     Codigo Segment
+     15				     Assume CS:Codigo,DS:Datos,SS:Pila
+     16
+     17	0000			     Inicio:
+     18	0000  B8 0000s			     mov ax,Datos
+     19	0003  8E D8			     mov ds,ax
+     20	0005  B8 0000s			     mov ax,Pila
+     21	0008  8E D0			     mov ss,ax
+     22
+     23	000A  B8 B800			     mov ax,0B800h
+     24	000D  8E C0			     mov es,ax
+     25	000F  B4 03			     mov ah,3
+     26	0011  B9 010A			     mov cx,266
+     27	0014  BE 0000r			     mov si,OFFSET Texto
+     28	0017  BF 000A			     mov di,10
+     29
+     30	001A  B2 41			     mov dl,'A'
+     31	001C  26: 88 15			     mov es:[di],dl
+     32
+     33
+     34
+     35
+     36	001F			     OtroCaracter:
+     37	001F  AC			     lodsb
+     38	0020  26: 88 05			     mov es:[di],al ;background
+     39	0023  47			     inc di
+     40	0024  26: C7 05	0004		     mov es:[di],04h ;foreground
+*Warning* video.ASM(38)	Argument needs type override
+     41	0029  47			     inc di
+     42	002A  E2 F3		     loop OtroCaracter
+     43
+     44
+     45	002C  B4 01			     mov ah,01h
+     46	002E  CD 21			     int 21h
+     47
+     48	0030  B8 4C00			     mov ax,4c00h
+     49	0033  CD 21			     int 21h
+     50
+     51	0035			     Codigo Ends
+     52					     end Inicio
+Turbo Assembler	 Version 4.1	    11/06/20 18:05:09	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "11/06/20"
+??FILENAME			  Text	 "video	  "
+??TIME				  Text	 "18:05:09"
+??VERSION			  Number 040A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODIGO
+@FILENAME			  Text	 VIDEO
+@WORDSIZE			  Text	 2
+INICIO				  Near	 CODIGO:0000
+OTROCARACTER			  Near	 CODIGO:001F
+TEXTO				  Byte	 DATOS:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODIGO				  16  0035 Para	  none
+DATOS				  16  0018 Para	  none
+PILA				  16  0FFF Para	  none
+Turbo Assembler	 Version 4.1	    11/06/20 18:05:09	    Page 3
+Error Summary
+
+
+
+*Warning* video.ASM(38)	Argument needs type override
+
