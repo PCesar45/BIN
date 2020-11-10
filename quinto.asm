@@ -25,7 +25,7 @@ SDato Segment para public'Data'
 	Textcolor	db	01h
       Fila        db    0h
       Columna     db    0h
-      LineCommand db    0FFh Dup (?)
+      LineCommand db    0FFh Dup ('$')
       Param1      db    0FFh Dup (?)
       Param2      db    0FFh Dup (?)
       Param3      db    0FFh Dup (?)
@@ -246,15 +246,15 @@ SCodigo Segment para public 'Code'					;Define el segmento de código para tasm.
             add   Al,48
             Call  PrintfC
             jmp short exit 
-      hex: 
-            Mov   Bl,Al
-            add   Al,55
-            Call  PrintfC
-      exit:                                         ;termina el cuerpo del procedimiento... 
-            Pop   Bp                                 ;y se prepara para la salidad del mismo restaurando y equilibrando la pila nuevamente...
-            Pop   Bx                                 ;empezando por la restauración de la cima de la pila...
-            Pop   Ax
-            Ret 2                                    ;retorne al programa principal y mueva el tope de la pila sin el parámetro metido por el ax...
+            hex: 
+                  Mov   Bl,Al
+                  add   Al,55
+                  Call  PrintfC
+            exit:                                         ;termina el cuerpo del procedimiento... 
+                  Pop   Bp                                 ;y se prepara para la salidad del mismo restaurando y equilibrando la pila nuevamente...
+                  Pop   Bx                                 ;empezando por la restauración de la cima de la pila...
+                  Pop   Ax
+                  Ret 2                                    ;retorne al programa principal y mueva el tope de la pila sin el parámetro metido por el ax...
       PrintHex EndP                                 ;así la pila se equilibra y continúa el programa como si nada hubiera sucedido...
 	
       ;------------------------------------------------------;
@@ -278,10 +278,11 @@ SCodigo Segment para public 'Code'					;Define el segmento de código para tasm.
             Mov   Es,Ax
             Xor   Cx,Cx
             Mov   Cl,Byte Ptr Ds:[LongLC]
+            dec   cl 
             Mov   Si,2[LongLC]                        ;dos = uno por la posición 81h y uno más por el espacio en blanco.
             Rep   Movsb
             ListPop <Bp, Bx, Si, Di, Es>
-            Ret   14
+            Ret   4
       GetCommanderLine EndP
 	
       ;------------------------------------------------------;
@@ -295,35 +296,12 @@ SCodigo Segment para public 'Code'					;Define el segmento de código para tasm.
 	;       Dl,Columna.                                    ;
 	;------------------------------------------------------;
       EvalCommanderLine Proc Near
-        Jmp Short BeginPro1                                ;permite la declaración de variables locales.
-            TempoLongLC DB    0h                           ;variable local, no se puede iniciar acá porque detiene el código pues no es una instrucción.
-        BeginPro1:
-            LonguitudLC EQU   80h
-            ListPush  <Es, Di, Si, Cx, Bp>      
-            Mov   Bp,Sp 
-            Mov   Di,12[Bp]
-            Mov   Ax,14[Bp]
-            Mov   Ds,Ax
-            Mov   Cx,Di
-            Push  Cx
-            Mov   Cl,(Byte Ptr Es:[LonguitudLC])
-            Dec   Cl                                        ;quite el espacio en el blanco en
-            Mov   TempoLongLC,Cl
-            Mov   Si,OffSet Ds:LineCommand
-            Mov   Es,Ax 
-            OtroParam:
-                  Xor   Ch,Ch
-                  Mov   Cl,TempoLongLC
-                  Mov   Al,20h                                    ;espacio en blanco.
-                  Dec   Cx
-                  ClD
-                  RepNE ScasB
-                  
-                  Mov   Di,OffSet Ds:Param1
-                  Rep   Movsb
-            Loop OtroParam
-            ListPop <Bp, Bx, Si, Di, Es>
-            Ret   14
+        mov ah,09h
+        mov dx,OffSet LineCommand
+        int 21h
+        mov ah,09h
+        mov dx,OffSet LineCommand
+        ret 
       EvalCommanderLine EndP
 ;------------------------------------------------------;
 ;                Programa Principal                    ;
@@ -333,81 +311,24 @@ Begin:
       Xor   Ax,Ax										;Pone en cero Al reg Ax.
       Mov   Ax,SDato									;Mueve la posición de SData Al reg Ax.
       Mov   DS,Ax							       		;Mueve la posición de Ax (SData) Al reg DS.
-      Xor   Ax,Ax
-      Mov   Ax,SPila
-      Mov   SS,Ax								            ;guardar el estado del CPU.
-      Call  ClearScreen								      ;limpiar la pantalla y preparar el color del texto.
-      Mov   Ax,Seg LineCommand
-      Push  Ax
-      Lea   Ax,LineCommand
-      Push  Ax
-      Call  GetCommanderLine
       
-      Mov   Ax,Seg LineCommand
-      Push  Ax
-      Lea   Ax,LineCommand
-      Push  Ax
-      Call  EvalCommanderLine
-      
-      Xor   Cx,Cx									;imprimir 15 veces hola mundo.
-      ciclo:
-            Inc   Cl								;disminuya el ciclo.                                                ;Prepare el CPU para la llamada de procedimiento.
-            Xor   Ax,Ax                                            ;Limpie el valor del Ax para la preparación del paso de parámetro por valor vía la Pila.
-            Mov   Al,Cl								;preserve el ciclo. Al con el caracter a imprimir.                                              ;Pase el parámetro pr valor a la pila...
-            Call  PrintHex 							;conviertalo a ascii.
-            Mov   Ax,Seg Fila
-            Push  Ax
-            Lea   Ax,Fila
-            Push  Ax
-            Mov   Ax,Seg Columna
-            Push  Ax
-            Lea   Ax,Columna
-            Push  Ax
-            Call  WhereXY
-            Push  Ax
-            Xor   Bh,Bh								;pagina actualmente desplegada.
-            Mov   Dl,Columna 								;incremente la columna.
-            Mov   Dh,Fila
-            Xor   Ax,Ax
-            Mov   Ax,Dx
-            Push  Ax
-            Call  GotoXY
-            Add   Sp,4
-            Xor   Bl,Bl								;pagina actualmente desplegada.
-            Mov   Al,255								;espacion en blanco.
-            Call  PrintfC							;imprime un espacio en blanco.
-            Mov   Ax,Seg Fila
-            Push  Ax
-            Lea   Ax,Fila
-            Push  Ax
-            Mov   Ax,Seg Columna
-            Push  Ax
-            Lea   Ax,Columna
-            Push  Ax
-            Call  WhereXY
-            Mov   Dl,Columna
-            Inc   Dl
-            Mov   Dh,Fila
-            Mov   Ax,Dx
-            Push  Ax
-            Call  GotoXY
-            Add   Sp,4
-            Lea   Dx,Message
-            Call  PrintfS								;imprimir message terminada por el caracter $.
-            cmp   Cl,0fh								;todos los colores? 
-      Jl  Puente			 						;salto directamente a ciclo1.		
-      PopA
+      push Ds
+      mov ax,seg LineCommand
+      push ax
+      lea ax,LineCommand
+      push ax
+      call GetCommanderLine
+      pop Ds
+
+      ;call EvalCommanderLine
+
+      lea dx,LineCommand ;lea=carga la direccion al registro (lea registro16,direccion)
+      mov ah,09h ;le mueve al registro ah un 09 en hexadecimal por eso la h 
+      int 21h  ;int = interrupcion /interrupcion 21,9(ah =09): imprime hasta toparse
+            ; con el simbolo "$",              por eso en la linea anterior le movi un 09 al ah
+
       Mov   Ax,4c00h                                              ;Saque todos los registros.
       Int   21h
       
-     Puente: 
-        Inc Fila
-        Mov   Dl,Columna
-        Mov   Dh,Fila
-        Mov   Ax,Dx
-        Push  Ax
-        Call  GotoXY
-        Add   Sp,4
-        Jmp Ciclo
 SCodigo EndS										;Fin del segmento de código.
       End Begin									;Fin del programa la etiqueta Al final dice en que punto debe comenzar el programa.

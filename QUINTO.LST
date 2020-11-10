@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 1
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 1
 quinto.ASM
 
 
@@ -32,7 +32,7 @@ quinto.ASM
      27	000D  01			     Textcolor	     db	     01h
      28	000E  00			   Fila	       db    0h
      29	000F  00			   Columna     db    0h
-     30	0010  FF*(??)			   LineCommand db    0FFh Dup (?)
+     30	0010  FF*(24)			   LineCommand db    0FFh Dup ('$')
      31	010F  FF*(??)			   Param1      db    0FFh Dup (?)
      32	020E  FF*(??)			   Param2      db    0FFh Dup (?)
      33	030D  FF*(??)			   Param3      db    0FFh Dup (?)
@@ -60,7 +60,7 @@ quinto.ASM
      55					   EndM
      56
      57					     PushA Macro
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 2
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 2
 quinto.ASM
 
 
@@ -122,7 +122,7 @@ quinto.ASM
     112						 PushA
 1   113						 ListPush <Ax, Bx, Cx, Dx, Si, Di, Bp, Sp>
 3   114	0000  50				    Push Ax
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 3
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 3
 quinto.ASM
 
 
@@ -184,7 +184,7 @@ quinto.ASM
     169	0025				   PrintfS Proc	Near
     170						 PushA
 1   171						 ListPush <Ax, Bx, Cx, Dx, Si, Di, Bp, Sp>
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 4
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 4
 quinto.ASM
 
 
@@ -246,7 +246,7 @@ quinto.ASM
     226	0042  B4 02				 Mov   Ah,02						     ;Servicio de Pop 21h / +
     227				     02	imprimir un caracter en	pantalla.
     228						 ;Mov  Al,Caracter					     ;Este parámetro debe   +
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 5
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 5
 quinto.ASM
 
 
@@ -308,7 +308,7 @@ quinto.ASM
     283					     ;	     Bh,Atributo.				    ;
     284					     ;------------------------------------------------------;
     285					     ;		       Parámetros de salida		    ;
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 6
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 6
 quinto.ASM
 
 
@@ -370,268 +370,139 @@ quinto.ASM
     340	0094  04 30				 add   Al,48
     341	0096  E8 FFA1				 Call  PrintfC
     342	0099  EB 07				 jmp short exit
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 7
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 7
 quinto.ASM
 
 
 
-    343	009B				   hex:
-    344	009B  8A D8				 Mov   Bl,Al
-    345	009D  04 37				 add   Al,55
-    346	009F  E8 FF98				 Call  PrintfC
-    347	00A2				   exit:					 ;termina el cuerpo del	procedimiento...
-    348	00A2  5D				 Pop   Bp				  ;y se	prepara	para la	salidad	del mismo   +
-    349				     restaurando y equilibrando	la pila	nuevamente...
-    350	00A3  5B				 Pop   Bx				  ;empezando por la restauración de la cima +
-    351				     de	la pila...
-    352	00A4  58				 Pop   Ax
-    353	00A5  C2 0002				 Ret 2					  ;retorne al programa principal y mueva el +
-    354				     tope de la	pila sin el parámetro metido por el ax...
-    355	00A8				   PrintHex EndP				 ;así la pila se equilibra y continúa el    +
-    356				     programa como si nada hubiera sucedido...
-    357
-    358					   ;------------------------------------------------------;
-    359					     ;		      Parámetros de entrada		    ;
-    360					     ;------------------------------------------------------;
-    361					     ;	     Bh,Atributo.				    ;
-    362					     ;------------------------------------------------------;
-    363					     ;		       Parámetros de salida		    ;
-    364					     ;------------------------------------------------------;
-    365					     ;	     Dh,Fila.					    ;
-    366					     ;	     Dl,Columna.				    ;
-    367					     ;------------------------------------------------------;
-    368	00A8				   GetCommanderLine Proc Near
-    369	      =0080				 LongLC	   EQU	 80h
-    370						 ListPush  <Es,	Di, Si,	Cx, Bp>
-2   371	00A8  06				    Push Es
-2   372	00A9  57				    Push Di
-2   373	00AA  56				    Push Si
-2   374	00AB  51				    Push Cx
-2   375	00AC  55				    Push Bp
-    376	00AD  8B EC				 Mov   Bp,Sp
-    377	00AF  8C C0				 Mov   Ax,Es
-    378	00B1  8E D8				 Mov   Ds,Ax
-    379	00B3  8B 7E 0C				 Mov   Di,12[Bp]
-    380	00B6  8B 46 0E				 Mov   Ax,14[Bp]
-    381	00B9  8E C0				 Mov   Es,Ax
-    382	00BB  33 C9				 Xor   Cx,Cx
-    383	00BD  8A 0E 0080			 Mov   Cl,Byte Ptr Ds:[LongLC]
-    384	00C1  BE 0082				 Mov   Si,2[LongLC]			   ;dos	= uno por la posición 81h y uno	más +
-    385				     por el espacio en blanco.
-    386	00C4  F3> A4				 Rep   Movsb
-    387						 ListPop <Bp, Bx, Si, Di, Es>
-2   388	00C6  5D				    Pop	Bp
-2   389	00C7  5B				    Pop	Bx
-2   390	00C8  5E				    Pop	Si
-2   391	00C9  5F				    Pop	Di
-2   392	00CA  07				    Pop	Es
-    393	00CB  C2 000E				 Ret   14
-    394	00CE				   GetCommanderLine EndP
-    395
-    396					   ;------------------------------------------------------;
-    397					     ;		      Parámetros de entrada		    ;
-    398					     ;------------------------------------------------------;
-    399					     ;	     Bh,Atributo.				    ;
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 8
+    343	009B					 hex:
+    344	009B  8A D8				       Mov   Bl,Al
+    345	009D  04 37				       add   Al,55
+    346	009F  E8 FF98				       Call  PrintfC
+    347	00A2					 exit:					       ;termina	el cuerpo del		    +
+    348				     procedimiento...
+    349	00A2  5D				       Pop   Bp					;y se prepara para la salidad del   +
+    350				     mismo restaurando y equilibrando la pila nuevamente...
+    351	00A3  5B				       Pop   Bx					;empezando por la restauración de la+
+    352				     cima de la	pila...
+    353	00A4  58				       Pop   Ax
+    354	00A5  C2 0002				       Ret 2					;retorne al programa principal y    +
+    355				     mueva el tope de la pila sin el parámetro metido por el ax...
+    356	00A8				   PrintHex EndP				 ;así la pila se equilibra y continúa el    +
+    357				     programa como si nada hubiera sucedido...
+    358
+    359					   ;------------------------------------------------------;
+    360					     ;		      Parámetros de entrada		    ;
+    361					     ;------------------------------------------------------;
+    362					     ;	     Bh,Atributo.				    ;
+    363					     ;------------------------------------------------------;
+    364					     ;		       Parámetros de salida		    ;
+    365					     ;------------------------------------------------------;
+    366					     ;	     Dh,Fila.					    ;
+    367					     ;	     Dl,Columna.				    ;
+    368					     ;------------------------------------------------------;
+    369	00A8				   GetCommanderLine Proc Near
+    370	      =0080				 LongLC	   EQU	 80h
+    371						 ListPush  <Es,	Di, Si,	Cx, Bp>
+2   372	00A8  06				    Push Es
+2   373	00A9  57				    Push Di
+2   374	00AA  56				    Push Si
+2   375	00AB  51				    Push Cx
+2   376	00AC  55				    Push Bp
+    377	00AD  8B EC				 Mov   Bp,Sp
+    378	00AF  8C C0				 Mov   Ax,Es
+    379	00B1  8E D8				 Mov   Ds,Ax
+    380	00B3  8B 7E 0C				 Mov   Di,12[Bp]
+    381	00B6  8B 46 0E				 Mov   Ax,14[Bp]
+    382	00B9  8E C0				 Mov   Es,Ax
+    383	00BB  33 C9				 Xor   Cx,Cx
+    384	00BD  8A 0E 0080			 Mov   Cl,Byte Ptr Ds:[LongLC]
+    385	00C1  FE C9				 dec   cl
+    386	00C3  BE 0082				 Mov   Si,2[LongLC]			   ;dos	= uno por la posición 81h y uno	más +
+    387				     por el espacio en blanco.
+    388	00C6  F3> A4				 Rep   Movsb
+    389						 ListPop <Bp, Bx, Si, Di, Es>
+2   390	00C8  5D				    Pop	Bp
+2   391	00C9  5B				    Pop	Bx
+2   392	00CA  5E				    Pop	Si
+2   393	00CB  5F				    Pop	Di
+2   394	00CC  07				    Pop	Es
+    395	00CD  C2 0004				 Ret   4
+    396	00D0				   GetCommanderLine EndP
+    397
+    398					   ;------------------------------------------------------;
+    399					     ;		      Parámetros de entrada		    ;
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 8
 quinto.ASM
 
 
 
     400					     ;------------------------------------------------------;
-    401					     ;		       Parámetros de salida		    ;
+    401					     ;	     Bh,Atributo.				    ;
     402					     ;------------------------------------------------------;
-    403					     ;	     Dh,Fila.					    ;
-    404					     ;	     Dl,Columna.				    ;
-    405					     ;------------------------------------------------------;
-    406	00CE				   EvalCommanderLine Proc Near
-    407	00CE  EB 01			     Jmp Short BeginPro1				;permite la declaración	de variables+
-    408				     locales.
-    409	00D0  00				 TempoLongLC DB	   0h				;variable local, no se puede iniciar+
-    410				     acá porque	detiene	el código pues no es una instrucción.
-    411	00D1				     BeginPro1:
-    412	      =0080				 LonguitudLC EQU   80h
-    413						 ListPush  <Es,	Di, Si,	Cx, Bp>
-2   414	00D1  06				    Push Es
-2   415	00D2  57				    Push Di
-2   416	00D3  56				    Push Si
-2   417	00D4  51				    Push Cx
-2   418	00D5  55				    Push Bp
-    419	00D6  8B EC				 Mov   Bp,Sp
-    420	00D8  8B 7E 0C				 Mov   Di,12[Bp]
-    421	00DB  8B 46 0E				 Mov   Ax,14[Bp]
-    422	00DE  8E D8				 Mov   Ds,Ax
-    423	00E0  8B CF				 Mov   Cx,Di
-    424	00E2  51				 Push  Cx
-    425	00E3  26: 8A 0E	0080			 Mov   Cl,(Byte	Ptr Es:[LonguitudLC])
-    426	00E8  FE C9				 Dec   Cl					 ;quite	el espacio en el blanco	en
-    427	00EA  2E: 88 0E	00D0r			 Mov   TempoLongLC,Cl
-    428	00EF  BE 0010r				 Mov   Si,OffSet Ds:LineCommand
-    429	00F2  8E C0				 Mov   Es,Ax
-    430	00F4					 OtroParam:
-    431	00F4  32 ED				       Xor   Ch,Ch
-    432	00F6  2E: 8A 0E	00D0r			       Mov   Cl,TempoLongLC
-    433	00FB  B0 20				       Mov   Al,20h				       ;espacio	en blanco.
-    434	00FD  49				       Dec   Cx
-    435	00FE  FC				       ClD
-    436	00FF  F2> AE				       RepNE ScasB
+    403					     ;		       Parámetros de salida		    ;
+    404					     ;------------------------------------------------------;
+    405					     ;	     Dh,Fila.					    ;
+    406					     ;	     Dl,Columna.				    ;
+    407					     ;------------------------------------------------------;
+    408	00D0				   EvalCommanderLine Proc Near
+    409	00D0  B4 09			     mov ah,09h
+    410	00D2  BA 0010r			     mov dx,OffSet LineCommand
+    411	00D5  CD 21			     int 21h
+    412	00D7  B4 09			     mov ah,09h
+    413	00D9  BA 0010r			     mov dx,OffSet LineCommand
+    414	00DC  C3			     ret
+    415	00DD				   EvalCommanderLine EndP
+    416				     ;------------------------------------------------------;
+    417				     ;		      Programa Principal		    ;
+    418				     ;------------------------------------------------------;
+    419	00DD			     Begin:
+    420					   PushA										    +
+    421				     ;Procedimiento principal como main{ } en C.
+1   422						 ListPush <Ax, Bx, Cx, Dx, Si, Di, Bp, Sp>
+3   423	00DD  50				    Push Ax
+3   424	00DE  53				    Push Bx
+3   425	00DF  51				    Push Cx
+3   426	00E0  52				    Push Dx
+3   427	00E1  56				    Push Si
+3   428	00E2  57				    Push Di
+3   429	00E3  55				    Push Bp
+3   430	00E4  54				    Push Sp
+    431	00E5  33 C0			   Xor	 Ax,Ax										    +
+    432				     ;Pone en cero Al reg Ax.
+    433	00E7  B8 0000s			   Mov	 Ax,SDato								     ;Mueve +
+    434				     la	posición de SData Al reg Ax.
+    435	00EA  8E D8			   Mov	 DS,Ax									     ;Mueve +
+    436				     la	posición de Ax (SData) Al reg DS.
     437
-    438	0101  BF 010Fr				       Mov   Di,OffSet Ds:Param1
-    439	0104  F3> A4				       Rep   Movsb
-    440	0106  E2 EC				 Loop OtroParam
-    441						 ListPop <Bp, Bx, Si, Di, Es>
-2   442	0108  5D				    Pop	Bp
-2   443	0109  5B				    Pop	Bx
-2   444	010A  5E				    Pop	Si
-2   445	010B  5F				    Pop	Di
-2   446	010C  07				    Pop	Es
-    447	010D  C2 000E				 Ret   14
-    448	0110				   EvalCommanderLine EndP
-    449				     ;------------------------------------------------------;
-    450				     ;		      Programa Principal		    ;
-    451				     ;------------------------------------------------------;
-    452	0110			     Begin:
-    453					   PushA										    +
-    454				     ;Procedimiento principal como main{ } en C.
-1   455						 ListPush <Ax, Bx, Cx, Dx, Si, Di, Bp, Sp>
-3   456	0110  50				    Push Ax
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 9
+    438	00EC  1E			   push	Ds
+    439	00ED  B8 0000s			   mov ax,seg LineCommand
+    440	00F0  50			   push	ax
+    441	00F1  B8 0010r			   lea ax,LineCommand
+    442	00F4  50			   push	ax
+    443	00F5  E8 FFB0			   call	GetCommanderLine
+    444	00F8  1F			   pop Ds
+    445
+    446					   ;call EvalCommanderLine
+    447
+    448	00F9  BA 0010r			   lea dx,LineCommand ;lea=carga la direccion al registro (lea registro16,direccion)
+    449	00FC  B4 09			   mov ah,09h ;le mueve	al registro ah un 09 en	hexadecimal por	eso la h
+    450	00FE  CD 21			   int 21h  ;int = interrupcion	/interrupcion 21,9(ah =09): imprime hasta toparse
+    451						 ; con el simbolo "$",		    por	eso en la linea	anterior le movi un 09 al ah
+    452
+    453	0100  B8 4C00			   Mov	 Ax,4c00h					       ;Saque todos los	registros.
+    454	0103  CD 21			   Int	 21h
+    455
+    456	0105			     SCodigo EndS									     ;Fin   +
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 9
 quinto.ASM
 
 
 
-3   457	0111  53				    Push Bx
-3   458	0112  51				    Push Cx
-3   459	0113  52				    Push Dx
-3   460	0114  56				    Push Si
-3   461	0115  57				    Push Di
-3   462	0116  55				    Push Bp
-3   463	0117  54				    Push Sp
-    464	0118  33 C0			   Xor	 Ax,Ax										    +
-    465				     ;Pone en cero Al reg Ax.
-    466	011A  B8 0000s			   Mov	 Ax,SDato								     ;Mueve +
-    467				     la	posición de SData Al reg Ax.
-    468	011D  8E D8			   Mov	 DS,Ax									     ;Mueve +
-    469				     la	posición de Ax (SData) Al reg DS.
-    470	011F  33 C0			   Xor	 Ax,Ax
-    471	0121  B8 0000s			   Mov	 Ax,SPila
-    472	0124  8E D0			   Mov	 SS,Ax										    +
-    473				     ;guardar el estado	del CPU.
-    474	0126  0E E8 FED6		   Call	 ClearScreen								   ;limpiar +
-    475				     la	pantalla y preparar el color del texto.
-    476	012A  B8 0000s			   Mov	 Ax,Seg	LineCommand
-    477	012D  50			   Push	 Ax
-    478	012E  B8 0010r			   Lea	 Ax,LineCommand
-    479	0131  50			   Push	 Ax
-    480	0132  E8 FF73			   Call	 GetCommanderLine
-    481
-    482	0135  B8 0000s			   Mov	 Ax,Seg	LineCommand
-    483	0138  50			   Push	 Ax
-    484	0139  B8 0010r			   Lea	 Ax,LineCommand
-    485	013C  50			   Push	 Ax
-    486	013D  E8 FF8E			   Call	 EvalCommanderLine
-    487
-    488	0140  33 C9			   Xor	 Cx,Cx										    +
-    489				     ;imprimir 15 veces	hola mundo.
-    490	0142				   ciclo:
-    491	0142  FE C1				 Inc   Cl							     ;disminuya	el  +
-    492				     ciclo.						   ;Prepare el CPU para	la llamada de	    +
-    493				     procedimiento.
-    494	0144  33 C0				 Xor   Ax,Ax						;Limpie	el valor del Ax	para+
-    495				     la	preparación del	paso de	parámetro por valor vía	la Pila.
-    496	0146  8A C1				 Mov   Al,Cl							     ;preserve el   +
-    497				     ciclo. Al con el caracter a imprimir.						;Pase el    +
-    498				     parámetro pr valor	a la pila...
-    499	0148  E8 FF3B				 Call  PrintHex							     ;conviertalo a +
-    500				     ascii.
-    501	014B  B8 0000s				 Mov   Ax,Seg Fila
-    502	014E  50				 Push  Ax
-    503	014F  B8 000Er				 Lea   Ax,Fila
-    504	0152  50				 Push  Ax
-    505	0153  B8 0000s				 Mov   Ax,Seg Columna
-    506	0156  50				 Push  Ax
-    507	0157  B8 000Fr				 Lea   Ax,Columna
-    508	015A  50				 Push  Ax
-    509	015B  0E E8 FF02			 Call  WhereXY
-    510	015F  50				 Push  Ax
-    511	0160  32 FF				 Xor   Bh,Bh							     ;pagina	    +
-    512				     actualmente desplegada.
-    513	0162  8A 16 000Fr			 Mov   Dl,Columna								    +
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 10
-quinto.ASM
-
-
-
-    514				     ;incremente la columna.
-    515	0166  8A 36 000Er			 Mov   Dh,Fila
-    516	016A  33 C0				 Xor   Ax,Ax
-    517	016C  8B C2				 Mov   Ax,Dx
-    518	016E  50				 Push  Ax
-    519	016F  0E E8 FEDE			 Call  GotoXY
-    520	0173  83 C4 04				 Add   Sp,4
-    521	0176  32 DB				 Xor   Bl,Bl							     ;pagina	    +
-    522				     actualmente desplegada.
-    523	0178  B0 FF				 Mov   Al,255									    +
-    524				     ;espacion en blanco.
-    525	017A  E8 FEBD				 Call  PrintfC							     ;imprime un    +
-    526				     espacio en	blanco.
-    527	017D  B8 0000s				 Mov   Ax,Seg Fila
-    528	0180  50				 Push  Ax
-    529	0181  B8 000Er				 Lea   Ax,Fila
-    530	0184  50				 Push  Ax
-    531	0185  B8 0000s				 Mov   Ax,Seg Columna
-    532	0188  50				 Push  Ax
-    533	0189  B8 000Fr				 Lea   Ax,Columna
-    534	018C  50				 Push  Ax
-    535	018D  0E E8 FED0			 Call  WhereXY
-    536	0191  8A 16 000Fr			 Mov   Dl,Columna
-    537	0195  FE C2				 Inc   Dl
-    538	0197  8A 36 000Er			 Mov   Dh,Fila
-    539	019B  8B C2				 Mov   Ax,Dx
-    540	019D  50				 Push  Ax
-    541	019E  0E E8 FEAF			 Call  GotoXY
-    542	01A2  83 C4 04				 Add   Sp,4
-    543	01A5  BA 0000r				 Lea   Dx,Message
-    544	01A8  E8 FE7A				 Call  PrintfS									    +
-    545				     ;imprimir message terminada por el	caracter $.
-    546	01AB  80 F9 0F				 cmp   Cl,0fh								     ;todos +
-    547				     los colores?
-    548	01AE  7C 0D			   Jl  Puente									     ;salto +
-    549				     directamente a ciclo1.
-    550					   PopA
-1   551	01B0  5C				 Pop   Sp								     ;poner +
-    552				     equilibrar	la pila...
-1   553	01B1  5D				 Pop   Bp									    +
-    554				     ;...solamente después de haber...
-1   555	01B2  5F				 Pop   Di									    +
-    556				     ;...llamado antes a pushallregs.
-1   557	01B3  5E				 Pop   Si								     ;Sino  +
-    558				     se	produce	un error en el programa.
-1   559	01B4  5A				 Pop   Dx
-1   560	01B5  59				 Pop   Cx
-1   561	01B6  5B				 Pop   Bx
-1   562	01B7  58				 Pop   Ax
-    563	01B8  B8 4C00			   Mov	 Ax,4c00h					       ;Saque todos los	registros.
-    564	01BB  CD 21			   Int	 21h
-    565
-    566	01BD				  Puente:
-    567	01BD  FE 06 000Er		     Inc Fila
-    568	01C1  8A 16 000Fr		     Mov   Dl,Columna
-    569	01C5  8A 36 000Er		     Mov   Dh,Fila
-    570	01C9  8B C2			     Mov   Ax,Dx
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 11
-quinto.ASM
-
-
-
-    571	01CB  50			     Push  Ax
-    572	01CC  0E E8 FE81		     Call  GotoXY
-    573	01D0  83 C4 04			     Add   Sp,4
-    574	01D3  E9 FF6C			     Jmp Ciclo
-    575	01D6			     SCodigo EndS									     ;Fin   +
-    576				     del segmento de código.
-    577					   End Begin								     ;Fin del	    +
-    578				     programa la etiqueta Al final dice	en que punto debe comenzar el programa.
-Turbo Assembler	 Version 4.1	    10/28/20 12:02:12	    Page 12
+    457				     del segmento de código.
+    458					   End Begin								     ;Fin del	    +
+    459				     programa la etiqueta Al final dice	en que punto debe comenzar el programa.
+Turbo Assembler	 Version 4.1	    11/10/20 12:34:40	    Page 10
 Symbol Table
 
 
@@ -639,20 +510,18 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "10/28/20"
+??DATE				  Text	 "11/10/20"
 ??FILENAME			  Text	 "quinto  "
-??TIME				  Text	 "12:02:11"
+??TIME				  Text	 "12:34:40"
 ??VERSION			  Number 040A
 @CPU				  Text	 0101H
 @CURSEG				  Text	 SCODIGO
 @FILENAME			  Text	 QUINTO
 @WORDSIZE			  Text	 2
-BEGIN				  Near	 SCODIGO:0110
-BEGINPRO1			  Near	 SCODIGO:00D1
-CICLO				  Near	 SCODIGO:0142
+BEGIN				  Near	 SCODIGO:00DD
 CLEARSCREEN			  Far	 SCODIGO:0000
 COLUMNA				  Byte	 SDATO:000F
-EVALCOMMANDERLINE		  Near	 SCODIGO:00CE
+EVALCOMMANDERLINE		  Near	 SCODIGO:00D0
 EXIT				  Near	 SCODIGO:00A2
 FILA				  Byte	 SDATO:000E
 GETCOMMANDERLINE		  Near	 SCODIGO:00A8
@@ -660,9 +529,7 @@ GOTOXY				  Far	 SCODIGO:0051
 HEX				  Near	 SCODIGO:009B
 LINECOMMAND			  Byte	 SDATO:0010
 LONGLC				  Number 0080
-LONGUITUDLC			  Number 0080
 MESSAGE				  Byte	 SDATO:0000
-OTROPARAM			  Near	 SCODIGO:00F4
 PARAM1				  Byte	 SDATO:010F
 PARAM2				  Byte	 SDATO:020E
 PARAM3				  Byte	 SDATO:030D
@@ -673,8 +540,6 @@ PARAM7				  Byte	 SDATO:0709
 PRINTFC				  Near	 SCODIGO:003A
 PRINTFS				  Near	 SCODIGO:0025
 PRINTHEX			  Near	 SCODIGO:0086
-PUENTE				  Near	 SCODIGO:01BD
-TEMPOLONGLC			  Byte	 SCODIGO:00D0
 TEXTCOLOR			  Byte	 SDATO:000D
 WHEREXY				  Far	 SCODIGO:0061
 
@@ -687,7 +552,7 @@ PUSHA
 
 Groups & Segments		  Bit Size Align  Combine Class
 
-SCODIGO				  16  01D6 Para	  Public  CODE
+SCODIGO				  16  0105 Para	  Public  CODE
 SDATO				  16  0808 Para	  Public  DATA
 SPILA				  16  0240 Para	  Stack	  STACK
 

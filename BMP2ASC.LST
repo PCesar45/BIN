@@ -1,40 +1,106 @@
-Turbo Assembler	 Version 4.1	    11/09/20 11:55:40	    Page 1
+Turbo Assembler	 Version 4.1	    11/10/20 16:58:14	    Page 1
 bmp2asc.ASM
 
 
 
       1				     ;Examen1 de arquitectura de computadores
       2				     extrn PonerModoVideo    :far
-      3	0000			     Datos Segment para	public 'Datos'
-      4					     extrn TipoVideo :byte
-      5	0000			     Datos EndS
-      6
-      7				     ;----------------------------
-      8	0000			     Codigo Segment
-      9				     Assume cs:Codigo ,	ds:Datos
-     10
-     11	0000			     Inicio:
-     12	0000  B8 0000s			     mov ax,Datos
-     13	0003  8E D8			     mov ds,ax
-     14
-     15	0005  C6 06 0000e 12		     mov TipoVideo,18
-     16	000A  9A 00000000se		     call PonerModoVideo
-     17
-     18					     ;Espera que le de enter  para salirse
-     19	000F  B4 01			     mov ah,01h
-     20	0011  CD 21			     int 21h
-     21	0013  32 E4			     xor ah,ah
-     22
-     23	0015  C6 06 0000e 03		     mov TipoVideo,3
-     24	001A  9A 00000000se		     call PonerModoVideo
-     25
-     26
-     27	001F  B8 4C00			 mov ax,4c00h
-     28	0022  CD 21			     int 21h
-     29
-     30	0024			      Codigo EndS
-     31					     End Inicio
-Turbo Assembler	 Version 4.1	    11/09/20 11:55:40	    Page 2
+      3
+      4	0000			     Datos Segment para	public 'Datos'
+      5					     extrn TipoVideo :byte
+      6	0000  FF*(24)			     filename db    0FFh Dup ('$')
+      7	00FF			     Datos EndS
+      8				      ListPush	Macro lista
+      9						     IRP i,<lista>
+     10							     Push i
+     11						     EndM
+     12					     EndM
+     13
+     14					     ListPop  Macro lista
+     15						     IRP i,<lista>
+     16							     Pop i
+     17						     EndM
+     18					     EndM
+     19
+     20				     ;----------------------------
+     21	0000			     Codigo Segment
+     22				     Assume cs:Codigo ,	ds:Datos
+     23
+     24	0000			     GetCommanderLine Proc Near
+     25	      =0080				     LongLC    EQU   80h
+     26						     ListPush  <Es, Di,	Si, Cx,	Bp>
+2    27	0000  06					     Push Es
+2    28	0001  57					     Push Di
+2    29	0002  56					     Push Si
+2    30	0003  51					     Push Cx
+2    31	0004  55					     Push Bp
+     32	0005  8B EC				     Mov   Bp,Sp
+     33	0007  8C C0				     Mov   Ax,Es
+     34	0009  8E D8				     Mov   Ds,Ax
+     35	000B  8B 7E 0C				     Mov   Di,12[Bp]
+     36	000E  8B 46 0E				     Mov   Ax,14[Bp]
+     37	0011  8E C0				     Mov   Es,Ax
+     38	0013  33 C9				     Xor   Cx,Cx
+     39	0015  8A 0E 0080			     Mov   Cl,Byte Ptr Ds:[LongLC]
+     40	0019  FE C9				     dec   cl
+     41	001B  BE 0082				     Mov   Si,2[LongLC]			       ;dos = uno por la posici�n 81h	y   +
+     42				     uno m�s por el espacio en blanco.
+     43	001E  F3> A4				     Rep   Movsb
+     44						     ListPop <Bp, Bx, Si, Di, Es>
+2    45	0020  5D					     Pop Bp
+2    46	0021  5B					     Pop Bx
+2    47	0022  5E					     Pop Si
+2    48	0023  5F					     Pop Di
+2    49	0024  07					     Pop Es
+     50	0025  C2 0004				     Ret   4
+     51	0028			     GetCommanderLine EndP
+     52
+     53	0028			     Inicio:
+     54	0028  B8 0000s			     mov ax,Datos
+     55	002B  8E D8			     mov ds,ax
+     56
+     57					     ;Leer el comando ,	nombre del archivo
+Turbo Assembler	 Version 4.1	    11/10/20 16:58:14	    Page 2
+bmp2asc.ASM
+
+
+
+     58	002D  1E			     push Ds
+     59	002E  B8 0000s			     mov ax,seg	filename
+     60	0031  50			     push ax
+     61	0032  B8 0000r			     lea ax,filename
+     62	0035  50			     push ax
+     63	0036  E8 FFC7			     call GetCommanderLine
+     64	0039  1F			     pop Ds
+     65
+     66	003A  BA 0000r			     lea dx,filename ;lea=carga	la direccion al	registro (lea registro16,direccion)
+     67	003D  B4 09			     mov ah,09h	;le mueve al registro ah un 09 en hexadecimal por eso la h
+     68	003F  CD 21			     int 21h  ;int = interrupcion /interrupcion	21,9(ah	=09): imprime hasta toparse
+     69						     ; con el simbolo "$",		por eso	en la linea anterior le	movi un	09  +
+     70				     al	ah
+     71					     ;Espera que le de enter  para salirse
+     72	0041  B4 01			     mov ah,01h
+     73	0043  CD 21			     int 21h
+     74	0045  32 E4			     xor ah,ah
+     75
+     76	0047  C6 06 0000e 12		     mov TipoVideo,18
+     77	004C  9A 00000000se		     call PonerModoVideo
+     78
+     79					     ;Espera que le de enter  para salirse
+     80	0051  B4 01			     mov ah,01h
+     81	0053  CD 21			     int 21h
+     82	0055  32 E4			     xor ah,ah
+     83
+     84	0057  C6 06 0000e 03		     mov TipoVideo,3
+     85	005C  9A 00000000se		     call PonerModoVideo
+     86
+     87
+     88	0061  B8 4C00			 mov ax,4c00h
+     89	0064  CD 21			     int 21h
+     90
+     91	0066			      Codigo EndS
+     92					     End Inicio
+Turbo Assembler	 Version 4.1	    11/10/20 16:58:14	    Page 3
 Symbol Table
 
 
@@ -42,20 +108,28 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "11/09/20"
+??DATE				  Text	 "11/10/20"
 ??FILENAME			  Text	 "bmp2asc "
-??TIME				  Text	 "11:55:40"
+??TIME				  Text	 "16:58:14"
 ??VERSION			  Number 040A
 @CPU				  Text	 0101H
 @CURSEG				  Text	 CODIGO
 @FILENAME			  Text	 BMP2ASC
 @WORDSIZE			  Text	 2
-INICIO				  Near	 CODIGO:0000
+FILENAME			  Byte	 DATOS:0000
+GETCOMMANDERLINE		  Near	 CODIGO:0000
+INICIO				  Near	 CODIGO:0028
+LONGLC				  Number 0080
 PONERMODOVIDEO			  Far	 ----:---- Extern
 TIPOVIDEO			  Byte	 DATOS:---- Extern
 
+Macro Name
+
+LISTPOP
+LISTPUSH
+
 Groups & Segments		  Bit Size Align  Combine Class
 
-CODIGO				  16  0024 Para	  none
-DATOS				  16  0000 Para	  Public  DATOS
+CODIGO				  16  0066 Para	  none
+DATOS				  16  00FF Para	  Public  DATOS
 

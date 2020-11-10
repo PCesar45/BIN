@@ -3,7 +3,7 @@
 
  00000H 0023FH 00240H SPILA              STACK
  00240H 00A47H 00808H SDATO              DATA
- 00A50H 00C25H 001D6H SCODIGO            CODE
+ 00A50H 00B54H 00105H SCODIGO            CODE
 
-Program entry point at 00A5:0110
+Program entry point at 00A5:00DD
 

@@ -7,6 +7,7 @@ public GotoXY
 public WhereXY
 public PrintHex
 public LeerChar
+public GetCommanderLine
 
 valorParametros equ 2
 ProceFar        equ 2
@@ -150,6 +151,33 @@ LeerChar Proc Far
 	mov Word ptr [bp+ProceFar+valorParametros*1],ax
 	ret
 LeerChar EndP
+
+;------------------------------------------------------;
+;                Parámetros de entrada                 ;
+;------------------------------------------------------;
+;       Bh,Atributo.                                   ;
+;------------------------------------------------------;
+;                 Parámetros de salida                 ;
+;------------------------------------------------------;
+;       Dh,Fila.                                       ;
+;       Dl,Columna.                                    ;
+;------------------------------------------------------;
+GetCommanderLine Proc Near
+       LongLC    EQU   80h
+       ListPush  <Es, Di, Si, Cx, Bp>      
+       Mov   Bp,Sp 
+       Mov   Ax,Es
+       Mov   Ds,Ax
+       Mov   Di,12[Bp]
+       Mov   Ax,14[Bp]
+       Mov   Es,Ax
+       Xor   Cx,Cx
+       Mov   Cl,Byte Ptr Ds:[LongLC]
+       Mov   Si,2[LongLC]                        ;dos = uno por la posición 81h y uno más por el espacio en blanco.
+       Rep   Movsb
+       ListPop <Bp, Bx, Si, Di, Es>
+       Ret   14
+GetCommanderLine EndP
 
 Procedimientos EndS
 	 End

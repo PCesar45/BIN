@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    10/05/20 14:13:28	    Page 1
+Turbo Assembler	 Version 4.1	    11/09/20 20:57:28	    Page 1
 pruep.ASM
 
 
@@ -6,31 +6,148 @@ pruep.ASM
       1				     ;prueba
       2
       3	0000			     SegDatos segment para "Data"
-      4	0000  6E 6F 6D 62 72 65	24	 nombre	db 'nombre$'
-      5	0007			     SegDatos EndS ; fin del segmento de datos
+      4	0000  FF*(24)			 nombre	db   0FFh Dup ('$')
+      5	00FF			     SegDatos EndS ; fin del segmento de datos
       6
-      7	0000			     segCodigo segment para "code"
-      8	0000			       Inicio:
-      9					   assume CS:segCodigo
-     10
-     11	0000  33 C0			   xor ax,ax ;limpia el	registro ax(acumulador)/lo pone	en cero
-     12	0002  50			   push	ax ;Mete el registro ax	a la pila
-     13	0003  B8 0000s			   mov ax,SegDatos ;mueve la posicion del segmento de datos al registro	ax
-     14	0006  8E D8			   mov DS,ax  ;mueve el	ax ya con el segDatos al registro DS(Data segment)
-     15					  ; pop	   ax ;saca el ax de la	pila
-     16
-     17	0008  BA 0000r			   lea dx,nombre ;lea=carga la direccion al registro (lea registro16,direccion)
-     18	000B  B4 09			   mov ah,09h ;le mueve	al registro ah un 09 en	hexadecimal por	eso la h
-     19	000D  CD 21			   int 21h  ;int = interrupcion	/interrupcion 21,9(ah =09): imprime hasta toparse
-     20						 ; con el simbolo "$",		    por	eso en la linea	anterior le movi un 09 al ah
-     21
-     22	000F  33 C0			   xor ax,ax	;Limpia	el al y	prepara	el ah para la salida.
-     23	0011  B8 4C00			   mov ax,4c00h	  ;Servicio AH=4c int 21h para salir del programa.
-     24	0014  CD 21			   int 21h	  ;Llamada al DOS. Termine el programa.
-     25	0016			     segCodigo EndS ; fin del segmento de codigo
-     26					 End Inicio ;Fin del programa la etiqueta al final dice	en que punto debe comenzar el	    +
-     27				     programa.
-Turbo Assembler	 Version 4.1	    10/05/20 14:13:28	    Page 2
+      7				     ListPush  Macro lista
+      8					   IRP i,<lista>
+      9					      Push i
+     10					   EndM
+     11				     EndM
+     12				      ListPop  Macro lista
+     13					     IRP i,<lista>
+     14						Pop i
+     15					     EndM
+     16				       EndM
+     17				     PushA Macro
+     18						 ListPush <Ax, Bx, Cx, Dx, Si, Di, Bp, Sp>
+     19					   EndM			   ;Su contra parte es la macro	siguiente.
+     20
+     21				     PopA Macro
+     22								 ;...la	pila del programa.
+     23					       Pop   Sp			 ;poner	equilibrar la pila...
+     24					       Pop   Bp			 ;...solamente después	de haber...
+     25					       Pop   Di			 ;...llamado antes a pushallregs.
+     26					       Pop   Si			 ;Sino se produce un error en el programa.
+     27					       Pop   Dx
+     28					       Pop   Cx
+     29					       Pop   Bx
+     30					       Pop   Ax
+     31				     EndM
+     32	0000			     segCodigo segment para "code"
+     33
+     34				       ;------------------------------------------------------;
+     35				       ;		Parámetros de entrada		       ;
+     36				       ;------------------------------------------------------;
+     37				       ;       Bh,Atributo.				      ;
+     38				       ;------------------------------------------------------;
+     39				       ;		 Parámetros de	salida		       ;
+     40				       ;------------------------------------------------------;
+     41				       ;       Dh,Fila.					      ;
+     42				       ;       Dl,Columna.				      ;
+     43				       ;------------------------------------------------------;
+     44	0000			       GetCommanderLine	Proc Near
+     45	      =0080			     LongLC    EQU   80h
+     46					     ListPush  <Es, Di,	Si, Cx,	Bp>
+2    47	0000  06			      Push Es
+2    48	0001  57			      Push Di
+2    49	0002  56			      Push Si
+2    50	0003  51			      Push Cx
+2    51	0004  55			      Push Bp
+     52	0005  8B EC			     Mov   Bp,Sp
+     53	0007  8C C0			     Mov   Ax,Es
+     54	0009  8E D8			     Mov   Ds,Ax
+     55	000B  8B 7E 0C			     Mov   Di,12[Bp]
+     56	000E  8B 46 0E			     Mov   Ax,14[Bp]
+     57	0011  8E C0			     Mov   Es,Ax
+Turbo Assembler	 Version 4.1	    11/09/20 20:57:28	    Page 2
+pruep.ASM
+
+
+
+     58	0013  33 C9			     Xor   Cx,Cx
+     59	0015  8A 0E 0080		     Mov   Cl,Byte Ptr Ds:[LongLC]
+     60	0019  BE 0082			     Mov   Si,2[LongLC]			       ;dos = uno por la posición 81h y uno más   +
+     61				     por el espacio en blanco.
+     62	001C  F3> A4			     Rep   Movsb
+     63					     ListPop <Bp, Bx, Si, Di, Es>
+2    64	001E  5D				Pop Bp
+2    65	001F  5B				Pop Bx
+2    66	0020  5E				Pop Si
+2    67	0021  5F				Pop Di
+2    68	0022  07				Pop Es
+     69	0023  C2 000E			     Ret   14
+     70	0026			       GetCommanderLine	EndP
+     71	0026			       Inicio:
+     72					   assume CS:segCodigo
+     73					   PushA
+1    74						 ListPush <Ax, Bx, Cx, Dx, Si, Di, Bp, Sp>
+3    75	0026  50			      Push Ax
+3    76	0027  53			      Push Bx
+3    77	0028  51			      Push Cx
+3    78	0029  52			      Push Dx
+3    79	002A  56			      Push Si
+3    80	002B  57			      Push Di
+3    81	002C  55			      Push Bp
+3    82	002D  54			      Push Sp
+     83	002E  33 C0			   xor ax,ax ;limpia el	registro ax(acumulador)/lo pone	en cero
+     84	0030  50			   push	ax ;Mete el registro ax	a la pila
+     85	0031  B8 0000s			   mov ax,SegDatos ;mueve la posicion del segmento de datos al registro	ax
+     86	0034  8E D8			   mov DS,ax  ;mueve el	ax ya con el segDatos al registro DS(Data segment)
+     87					  ; pop	   ax ;saca el ax de la	pila
+     88
+     89
+     90	0036  33 C0			   xor ax,ax
+     91	0038  B8 0000s			   Mov	 Ax,Seg	nombre
+     92	003B  50			   Push	 Ax
+     93	003C  B8 0000r			   Lea	 Ax,nombre
+     94	003F  50			   Push	 Ax
+     95	      =0080			   LongLC    EQU   80h
+     96					   ListPush  <Es, Di, Si, Cx, Bp>
+2    97	0040  06			      Push Es
+2    98	0041  57			      Push Di
+2    99	0042  56			      Push Si
+2   100	0043  51			      Push Cx
+2   101	0044  55			      Push Bp
+    102	0045  8B EC			   Mov	 Bp,Sp
+    103	0047  8C C0			   Mov	 Ax,Es
+    104	0049  8E D8			   Mov	 Ds,Ax
+    105	004B  8B 7E 0C			   Mov	 Di,12[Bp]
+    106	004E  8B 46 0E			   Mov	 Ax,14[Bp]
+    107	0051  8E C0			   Mov	 Es,Ax
+    108	0053  33 C9			   Xor	 Cx,Cx
+    109	0055  8A 0E 0080		   Mov	 Cl,Byte Ptr Ds:[LongLC]
+    110	0059  BE 0082			   Mov	 Si,2[LongLC]			     ;dos = uno	por la posición 81h y uno más	por +
+    111				     el	espacio	en blanco.
+    112	005C  F3> A4			   Rep	 Movsb
+    113					   ListPop <Bp,	Bx, Si,	Di, Es>
+2   114	005E  5D				Pop Bp
+Turbo Assembler	 Version 4.1	    11/09/20 20:57:28	    Page 3
+pruep.ASM
+
+
+
+2   115	005F  5B				Pop Bx
+2   116	0060  5E				Pop Si
+2   117	0061  5F				Pop Di
+2   118	0062  07				Pop Es
+    119	0063  C2 000E			   Ret	 14
+    120
+    121
+    122	0066  33 D2			   xor dx,dx
+    123	0068  33 C0			   xor ax,ax
+    124	006A  BA 0000r			   lea dx,nombre ;lea=carga la direccion al registro (lea registro16,direccion)
+    125	006D  B4 09			   mov ah,09h ;le mueve	al registro ah un 09 en	hexadecimal por	eso la h
+    126	006F  CD 21			   int 21h  ;int = interrupcion	/interrupcion 21,9(ah =09): imprime hasta toparse
+    127						 ; con el simbolo "$",		    por	eso en la linea	anterior le movi un 09 al ah
+    128
+    129	0071  33 C0			   xor ax,ax	;Limpia	el al y	prepara	el ah para la salida.
+    130	0073  B8 4C00			   mov ax,4c00h	  ;Servicio AH=4c int 21h para salir del programa.
+    131	0076  CD 21			   int 21h	  ;Llamada al DOS. Termine el programa.
+    132	0078			     segCodigo EndS ; fin del segmento de codigo
+    133					 End Inicio ;Fin del programa la etiqueta al final dice	en que punto debe comenzar el	    +
+    134				     programa.
+Turbo Assembler	 Version 4.1	    11/09/20 20:57:28	    Page 4
 Symbol Table
 
 
@@ -38,19 +155,28 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "10/05/20"
+??DATE				  Text	 "11/09/20"
 ??FILENAME			  Text	 "pruep	  "
-??TIME				  Text	 "14:13:28"
+??TIME				  Text	 "20:57:28"
 ??VERSION			  Number 040A
 @CPU				  Text	 0101H
 @CURSEG				  Text	 SEGCODIGO
 @FILENAME			  Text	 PRUEP
 @WORDSIZE			  Text	 2
-INICIO				  Near	 SEGCODIGO:0000
+GETCOMMANDERLINE		  Near	 SEGCODIGO:0000
+INICIO				  Near	 SEGCODIGO:0026
+LONGLC				  Number 0080
 NOMBRE				  Byte	 SEGDATOS:0000
+
+Macro Name
+
+LISTPOP
+LISTPUSH
+POPA
+PUSHA
 
 Groups & Segments		  Bit Size Align  Combine Class
 
-SEGCODIGO			  16  0016 Para	  none	  CODE
-SEGDATOS			  16  0007 Para	  none	  DATA
+SEGCODIGO			  16  0078 Para	  none	  CODE
+SEGDATOS			  16  00FF Para	  none	  DATA
 
