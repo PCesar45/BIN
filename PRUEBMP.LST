@@ -1,0 +1,253 @@
+Turbo Assembler	 Version 4.1	    11/10/20 20:35:24	    Page 1
+pruebmp.ASM
+
+
+
+      1
+      2				     IDEAL
+      3	0000			     MODEL small
+      4	0000			     STACK 100h
+      5	0100			     DATASEG
+      6				     ;================================
+      7	0000  62 6C 6F 63 6B 73	2E+  filename db 'blocks.bmp',0
+      8	      62 6D 70 00
+      9
+     10	000B  ????		     filehandle	dw ?
+     11
+     12	000D  28*(00)		     Header db 40 dup (0)
+     13
+     14	0035  40*(00)		     Palette db	16*4 dup (0)
+     15
+     16	0075  0140*(00)		     ScrLine db	320 dup	(0)
+     17
+     18	01B5  45 72 72 6F 72 0D	0A+  ErrorMsg db 'Error', 13, 10,'$'
+     19	      24
+     20				     ;================================
+     21	01BD			     CODESEG
+     22				     ;================================
+     23	0000			     proc OpenFile;Sirve
+     24
+     25					 ; Open	file
+     26
+     27	0000  B4 3D			 mov ah, 3Dh
+     28	0002  32 C0			 xor al, al
+     29	0004  BA 0000r			 mov dx, offset	filename
+     30	0007  CD 21			 int 21h
+     31
+     32	0009  72 04			 jc openerror
+     33	000B  A3 000Br			 mov [filehandle], ax
+     34	000E  C3			 ret
+     35
+     36	000F				 openerror:
+     37	000F  BA 01B5r			 mov dx, offset	ErrorMsg
+     38	0012  B4 09			 mov ah, 9h
+     39	0014  CD 21			 int 21h
+     40	0016  C3			 ret
+     41	0017			     endp OpenFile
+     42	0017			     proc ReadHeader
+     43
+     44					 ; Read	BMP file header, 54 bytes
+     45
+     46	0017  B4 3F			 mov ah,3fh
+     47	0019  8B 1E 000Br		 mov bx, [filehandle]
+     48	001D  B9 0028			 mov cx,40
+     49	0020  BA 000Dr			 mov dx,offset Header
+     50	0023  CD 21			 int 21h
+     51	0025  C3			 ret
+     52	0026				 endp ReadHeader
+     53	0026				 proc ReadPalette
+     54
+     55					 ; Read	BMP file color palette,	256 colors * 4 bytes (400h)
+     56
+     57	0026  B4 3F			 mov ah,3fh
+Turbo Assembler	 Version 4.1	    11/10/20 20:35:24	    Page 2
+pruebmp.ASM
+
+
+
+     58	0028  B9 0040			 mov cx,40h
+     59	002B  BA 0035r			 mov dx,offset Palette
+     60	002E  CD 21			 int 21h
+     61	0030  C3			 ret
+     62	0031			     endp ReadPalette
+     63	0031			     proc CopyPal
+     64
+     65					 ; Copy	the colors palette to the video	memory
+     66					 ; The number of the first color should	be sent	to port	3C8h
+     67					 ; The palette is sent to port 3C9h
+     68
+     69	0031  BE 0035r			 mov si,offset Palette
+     70	0034  B9 0010			 mov cx,16
+     71	0037  BA 03C8			 mov dx,3C8h
+     72	003A  B0 00			 mov al,0
+     73
+     74					 ; Copy	starting color to port 3C8h
+     75
+     76	003C  EE			 out dx,al
+     77
+     78					 ; Copy	palette	itself to port 3C9h
+     79
+     80	003D  42			 inc dx
+     81	003E				 PalLoop:
+     82
+     83					 ; Note: Colors	in a BMP file are saved	as BGR values rather than RGB.
+     84
+     85	003E  8A 44 02			 mov al,[si+2] ; Get red value.
+     86	0041  D0 E8 D0 E8		 shr al,2 ; Max. is 255, but video palette maximal
+     87
+     88					 ; value is 63.	Therefore dividing by 4.
+     89
+     90	0045  EE			 out dx,al ; Send it.
+     91	0046  8A 44 01			 mov al,[si+1] ; Get green value.
+     92	0049  D0 E8 D0 E8		 shr al,2
+     93	004D  EE			 out dx,al ; Send it.
+     94	004E  8A 04			 mov al,[si] ; Get blue	value.
+     95	0050  D0 E8 D0 E8		 shr al,2
+     96	0054  EE			 out dx,al ; Send it.
+     97	0055  83 C6 04			 add si,4 ; Point to next color.
+     98
+     99					 ; (There is a null chr. after every color.)
+    100
+    101	0058  E2 E4			 loop PalLoop
+    102	005A  C3			 ret
+    103	005B			     endp CopyPal
+    104
+    105	005B			     proc CopyBitmap
+    106
+    107					 ; BMP graphics	are saved upside-down.
+    108					 ; Read	the graphic line by line (200 lines in VGA format),
+    109					 ; displaying the lines	from bottom to top.
+    110
+    111	005B  B8 A000			 mov ax, 0A000h
+    112	005E  8E C0			 mov es, ax
+    113	0060  B9 00C8			 mov cx,200
+    114	0063				 PrintBMPLoop:
+Turbo Assembler	 Version 4.1	    11/10/20 20:35:24	    Page 3
+pruebmp.ASM
+
+
+
+    115	0063  51			 push cx
+    116
+    117					 ; di =	cx*320,	point to the correct screen line
+    118
+    119	0064  8B F9			 mov di,cx
+    120	0066  D1 E1 D1 E1 D1 E1	D1+	 shl cx,6
+    121	      E1 D1 E1 D1 E1
+    122	0072  D1 E7 D1 E7 D1 E7	D1+	 shl di,8
+    123	      E7 D1 E7 D1 E7 D1	E7+
+    124	      D1 E7
+    125	0082  03 F9			 add di,cx
+    126
+    127					 ; Read	one line
+    128
+    129	0084  B4 3F			 mov ah,3fh
+    130	0086  B9 0140			 mov cx,320
+    131	0089  BA 0075r			 mov dx,offset ScrLine
+    132	008C  CD 21			 int 21h
+    133
+    134					 ; Copy	one line into video memory
+    135
+    136	008E  FC			 cld
+    137
+    138					 ; Clear direction flag, for movsb
+    139
+    140	008F  B9 0140			 mov cx,320
+    141	0092  BE 0075r			 mov si,offset ScrLine
+    142	0095  F3> A4			 rep movsb
+    143
+    144					 ; Copy	line to	the screen
+    145					 ;rep movsb is same as the following code:
+    146					 ;mov es:di, ds:si
+    147					 ;inc si
+    148					 ;inc di
+    149					 ;dec cx
+    150					 ;loop until cx=0
+    151
+    152	0097  59			 pop cx
+    153	0098  E2 C9			 loop PrintBMPLoop
+    154	009A  C3			 ret
+    155	009B			     endp CopyBitmap
+    156				     ;================================
+    157	009B			     start:
+    158	009B  B8 0000s		     mov ax, @data
+    159	009E  8E D8		     mov ds, ax
+    160				     ;================================
+    161
+    162					 ; Graphic mode
+    163	00A0  B8 0012			 mov ax, 18
+    164	00A3  CD 10			 int 10h
+    165
+    166					 ; Process BMP file
+    167	00A5  E8 FF58			 call OpenFile
+    168	00A8  E8 FF6C			 call ReadHeader
+    169	00AB  E8 FF78			 call ReadPalette
+    170	00AE  E8 FF80			 call CopyPal
+    171	00B1  E8 FFA7			 call CopyBitmap
+Turbo Assembler	 Version 4.1	    11/10/20 20:35:24	    Page 4
+pruebmp.ASM
+
+
+
+    172
+    173					 ; Wait	for key	press
+    174	00B4  B4 01			 mov ah,1
+    175
+    176	00B6  CD 21			 int 21h
+    177					 ; Back	to text	mode
+    178	00B8  B4 00			 mov ah, 0
+    179	00BA  B0 02			 mov al, 2
+    180	00BC  CD 10			 int 10h
+    181				     ;================================
+    182	00BE			     exit:
+    183	00BE  B8 4C00			 mov ax, 4c00h
+    184	00C1  CD 21			 int 21h
+    185					 END start
+Turbo Assembler	 Version 4.1	    11/10/20 20:35:24	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "11/10/20"
+??FILENAME			  Text	 "pruebmp "
+??TIME				  Text	 "20:35:24"
+??VERSION			  Number 040A
+@32BIT				  Text	 0
+@CODE				  Text	 _TEXT
+@CODESIZE			  Text	 0
+@CPU				  Text	 0101H
+@CURSEG				  Text	 _TEXT
+@DATA				  Text	 DGROUP
+@DATASIZE			  Text	 0
+@FILENAME			  Text	 PRUEBMP
+@INTERFACE			  Text	 00H
+@MODEL				  Text	 2
+@STACK				  Text	 DGROUP
+@WORDSIZE			  Text	 2
+COPYBITMAP			  Near	 _TEXT:005B
+COPYPAL				  Near	 _TEXT:0031
+ERRORMSG			  Byte	 DGROUP:01B5
+EXIT				  Near	 _TEXT:00BE
+FILEHANDLE			  Word	 DGROUP:000B
+FILENAME			  Byte	 DGROUP:0000
+HEADER				  Byte	 DGROUP:000D
+OPENERROR			  Near	 _TEXT:000F
+OPENFILE			  Near	 _TEXT:0000
+PALETTE				  Byte	 DGROUP:0035
+PALLOOP				  Near	 _TEXT:003E
+PRINTBMPLOOP			  Near	 _TEXT:0063
+READHEADER			  Near	 _TEXT:0017
+READPALETTE			  Near	 _TEXT:0026
+SCRLINE				  Byte	 DGROUP:0075
+START				  Near	 _TEXT:009B
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+DGROUP				  Group
+  STACK				  16  0100 Para	  Stack	  STACK
+  _DATA				  16  01BD Word	  Public  DATA
+_TEXT				  16  00C3 Word	  Public  CODE
+

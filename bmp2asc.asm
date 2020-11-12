@@ -3,7 +3,9 @@ extrn PonerModoVideo	:far
 
 Datos Segment para public 'Datos'
 	extrn TipoVideo :byte
-	filename db    0FFh Dup ('$')
+	filename db    0FFh Dup (?)
+	ErrorMsg db    'Error al abrir archivo', 13, 10,'$'
+	filehandle dw ?
 Datos EndS 
  ListPush  Macro lista
 		IRP i,<lista>
@@ -38,8 +40,28 @@ GetCommanderLine Proc Near
 		ListPop <Bp, Bx, Si, Di, Es>
 		Ret   4
 GetCommanderLine EndP
+OpenFile proc far ;Sirve
 
+    ; Open file
+
+    mov ah, 3Dh
+    xor al, al
+    mov dx, offset filename
+    int 21h
+
+    jc openerror
+    mov [filehandle], ax
+    ret
+
+    openerror:
+    mov dx, offset ErrorMsg
+    mov ah, 9h
+    int 21h
+    ret
+OpenFile endp
 Inicio:
+
+
 	mov ax,Datos
 	mov ds,ax
 	
@@ -52,14 +74,16 @@ Inicio:
 	call GetCommanderLine
 	pop Ds
 
-	lea dx,filename ;lea=carga la direccion al registro (lea registro16,direccion)
-	mov ah,09h ;le mueve al registro ah un 09 en hexadecimal por eso la h 
-	int 21h  ;int = interrupcion /interrupcion 21,9(ah =09): imprime hasta toparse
+	call OpenFile
+
+	;lea dx,filename ;lea=carga la direccion al registro (lea registro16,direccion)
+	;mov ah,09h ;le mueve al registro ah un 09 en hexadecimal por eso la h 
+	;int 21h  ;int = interrupcion /interrupcion 21,9(ah =09): imprime hasta toparse
 		; con el simbolo "$",              por eso en la linea anterior le movi un 09 al ah   
 	;Espera que le de enter  para salirse
-	mov ah,01h 
-	int 21h
-	xor ah,ah
+	;mov ah,01h 
+	;int 21h
+	;xor ah,ah
 
 	mov TipoVideo,18
 	call PonerModoVideo
