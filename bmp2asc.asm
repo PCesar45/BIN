@@ -6,6 +6,10 @@ Datos Segment para public 'Datos'
 	filename db    0FFh Dup (?)
 	ErrorMsg db    'Error al abrir archivo', 13, 10,'$'
 	filehandle dw ?
+	buffer db 0ffh dup('$')
+	
+	cont db 0
+
 Datos EndS 
  ListPush  Macro lista
 		IRP i,<lista>
@@ -59,9 +63,16 @@ OpenFile proc far ;Sirve
     int 21h
     ret
 OpenFile endp
+readfile proc far
+	mov ah,3fh
+	mov bx,filehandle
+	mov cx,54                 ;; cuantos bytes se van a leer
+	mov dx,offset buffer  ;; donde se va almacenar los datos
+	int 21h
+	Ret
+readfile endp 
+
 Inicio:
-
-
 	mov ax,Datos
 	mov ds,ax
 	
@@ -75,15 +86,24 @@ Inicio:
 	pop Ds
 
 	call OpenFile
+	call readfile
+	;xor cx,cx
+	;mov cl,64d 
+	;cicloN:
+	;	mov ah,02h
+	;	mov dl,buffer[cl]
+	;	int 21h
+	;loop cicloN
 
-	;lea dx,filename ;lea=carga la direccion al registro (lea registro16,direccion)
-	;mov ah,09h ;le mueve al registro ah un 09 en hexadecimal por eso la h 
-	;int 21h  ;int = interrupcion /interrupcion 21,9(ah =09): imprime hasta toparse
+	
+	lea dx,buffer ;lea=carga la direccion al registro (lea registro16,direccion)
+	mov ah,09h ;le mueve al registro ah un 09 en hexadecimal por eso la h 
+	int 21h  ;int = interrupcion /interrupcion 21,9(ah =09): imprime hasta toparse
 		; con el simbolo "$",              por eso en la linea anterior le movi un 09 al ah   
 	;Espera que le de enter  para salirse
-	;mov ah,01h 
-	;int 21h
-	;xor ah,ah
+	mov ah,01h 
+	int 21h
+	xor ah,ah
 
 	mov TipoVideo,18
 	call PonerModoVideo

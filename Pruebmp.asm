@@ -1,24 +1,23 @@
-
 IDEAL
 MODEL small
 STACK 100h
 DATASEG
 ;================================
-filename db 'blocks.bmp',0
+filename db 'blocks8.bmp',0
 
 filehandle dw ?
 
-Header db 40 dup (0)
+Header db 54 dup (0)
 
-Palette db 16*4 dup (0)
+Palette db 256*4 dup (0)
 
-ScrLine db 320 dup (0)
+ScrLine db 320 dup ('$')
 
 ErrorMsg db 'Error', 13, 10,'$'
 ;================================
 CODESEG
 ;================================
-proc OpenFile;Sirve
+proc OpenFile
 
     ; Open file
 
@@ -43,7 +42,7 @@ proc ReadHeader
 
     mov ah,3fh
     mov bx, [filehandle]
-    mov cx,40
+    mov cx,54
     mov dx,offset Header
     int 21h
     ret
@@ -53,7 +52,7 @@ proc ReadHeader
     ; Read BMP file color palette, 256 colors * 4 bytes (400h)
 
     mov ah,3fh
-    mov cx,40h
+    mov cx,400h
     mov dx,offset Palette
     int 21h
     ret
@@ -65,7 +64,7 @@ proc CopyPal
     ; The palette is sent to port 3C9h
 
     mov si,offset Palette
-    mov cx,16
+    mov cx,256
     mov dx,3C8h
     mov al,0
 
@@ -125,6 +124,7 @@ proc CopyBitmap
     mov cx,320
     mov dx,offset ScrLine
     int 21h
+	
 
     ; Copy one line into video memory
 
@@ -155,7 +155,7 @@ mov ds, ax
 ;================================
 
     ; Graphic mode
-    mov ax, 18
+    mov ax, 13h
     int 10h
 
     ; Process BMP file
@@ -164,6 +164,7 @@ mov ds, ax
     call ReadPalette
     call CopyPal
     call CopyBitmap
+    
 
     ; Wait for key press
     mov ah,1

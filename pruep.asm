@@ -66,27 +66,13 @@ segCodigo segment para "code"
       mov DS,ax  ;mueve el ax ya con el segDatos al registro DS(Data segment)
      ; pop    ax ;saca el ax de la pila
 
-
+     
       xor ax,ax
       Mov   Ax,Seg nombre
       Push  Ax
       Lea   Ax,nombre
       Push  Ax
-      LongLC    EQU   80h
-      ListPush  <Es, Di, Si, Cx, Bp>      
-      Mov   Bp,Sp 
-      Mov   Ax,Es
-      Mov   Ds,Ax
-      Mov   Di,12[Bp]
-      Mov   Ax,14[Bp]
-      Mov   Es,Ax
-      Xor   Cx,Cx
-      Mov   Cl,Byte Ptr Ds:[LongLC]
-      Mov   Si,2[LongLC]                        ;dos = uno por la posición 81h y uno más por el espacio en blanco.
-      Rep   Movsb
-      ListPop <Bp, Bx, Si, Di, Es>
-      Ret   14
-
+      Call  GetCommanderLine 
 
       xor dx,dx
       xor ax,ax

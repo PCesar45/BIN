@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    11/11/20 19:34:45	    Page 1
+Turbo Assembler	 Version 4.1	    11/13/20 19:29:36	    Page 1
 bmp2asc.ASM
 
 
@@ -14,125 +14,145 @@ bmp2asc.ASM
       9	      20 61 72 63 68 69	76+
      10	      6F 0D 0A 24
      11	0118  ????			     filehandle	dw ?
-     12	011A			     Datos EndS
-     13				      ListPush	Macro lista
-     14						     IRP i,<lista>
-     15							     Push i
-     16						     EndM
-     17					     EndM
-     18
-     19					     ListPop  Macro lista
-     20						     IRP i,<lista>
-     21							     Pop i
-     22						     EndM
-     23					     EndM
-     24
-     25				     ;----------------------------
-     26	0000			     Codigo Segment
-     27				     Assume cs:Codigo ,	ds:Datos
+     12	011A  FF*(24)			     buffer db 0ffh dup('$')
+     13
+     14	0219  00			     cont db 0
+     15
+     16	021A			     Datos EndS
+     17				      ListPush	Macro lista
+     18						     IRP i,<lista>
+     19							     Push i
+     20						     EndM
+     21					     EndM
+     22
+     23					     ListPop  Macro lista
+     24						     IRP i,<lista>
+     25							     Pop i
+     26						     EndM
+     27					     EndM
      28
-     29	0000			     GetCommanderLine Proc Near
-     30	      =0080				     LongLC    EQU   80h
-     31						     ListPush  <Es, Di,	Si, Cx,	Bp>
-2    32	0000  06					     Push Es
-2    33	0001  57					     Push Di
-2    34	0002  56					     Push Si
-2    35	0003  51					     Push Cx
-2    36	0004  55					     Push Bp
-     37	0005  8B EC				     Mov   Bp,Sp
-     38	0007  8C C0				     Mov   Ax,Es
-     39	0009  8E D8				     Mov   Ds,Ax
-     40	000B  8B 7E 0C				     Mov   Di,12[Bp]
-     41	000E  8B 46 0E				     Mov   Ax,14[Bp]
-     42	0011  8E C0				     Mov   Es,Ax
-     43	0013  33 C9				     Xor   Cx,Cx
-     44	0015  8A 0E 0080			     Mov   Cl,Byte Ptr Ds:[LongLC]
-     45	0019  FE C9				     dec   cl
-     46	001B  BE 0082				     Mov   Si,2[LongLC]			       ;dos = uno por la posici�n 81h	y   +
-     47				     uno m�s por el espacio en blanco.
-     48	001E  F3> A4				     Rep   Movsb
-     49						     ListPop <Bp, Bx, Si, Di, Es>
-2    50	0020  5D					     Pop Bp
-2    51	0021  5B					     Pop Bx
-2    52	0022  5E					     Pop Si
-2    53	0023  5F					     Pop Di
-2    54	0024  07					     Pop Es
-     55	0025  C2 0004				     Ret   4
-     56	0028			     GetCommanderLine EndP
-     57	0028			     OpenFile proc far ;Sirve
-Turbo Assembler	 Version 4.1	    11/11/20 19:34:45	    Page 2
+     29				     ;----------------------------
+     30	0000			     Codigo Segment
+     31				     Assume cs:Codigo ,	ds:Datos
+     32
+     33	0000			     GetCommanderLine Proc Near
+     34	      =0080				     LongLC    EQU   80h
+     35						     ListPush  <Es, Di,	Si, Cx,	Bp>
+2    36	0000  06					     Push Es
+2    37	0001  57					     Push Di
+2    38	0002  56					     Push Si
+2    39	0003  51					     Push Cx
+2    40	0004  55					     Push Bp
+     41	0005  8B EC				     Mov   Bp,Sp
+     42	0007  8C C0				     Mov   Ax,Es
+     43	0009  8E D8				     Mov   Ds,Ax
+     44	000B  8B 7E 0C				     Mov   Di,12[Bp]
+     45	000E  8B 46 0E				     Mov   Ax,14[Bp]
+     46	0011  8E C0				     Mov   Es,Ax
+     47	0013  33 C9				     Xor   Cx,Cx
+     48	0015  8A 0E 0080			     Mov   Cl,Byte Ptr Ds:[LongLC]
+     49	0019  FE C9				     dec   cl
+     50	001B  BE 0082				     Mov   Si,2[LongLC]			       ;dos = uno por la posici�n 81h	y   +
+     51				     uno m�s por el espacio en blanco.
+     52	001E  F3> A4				     Rep   Movsb
+     53						     ListPop <Bp, Bx, Si, Di, Es>
+2    54	0020  5D					     Pop Bp
+2    55	0021  5B					     Pop Bx
+2    56	0022  5E					     Pop Si
+2    57	0023  5F					     Pop Di
+Turbo Assembler	 Version 4.1	    11/13/20 19:29:36	    Page 2
 bmp2asc.ASM
 
 
 
-     58
-     59					 ; Open	file
-     60
-     61	0028  B4 3D			 mov ah, 3Dh
-     62	002A  32 C0			 xor al, al
-     63	002C  BA 0000r			 mov dx, offset	filename
-     64	002F  CD 21			 int 21h
-     65
-     66	0031  72 04			 jc openerror
-     67	0033  A3 0118r			 mov [filehandle], ax
-     68	0036  CB			 ret
+2    58	0024  07					     Pop Es
+     59	0025  C2 0004				     Ret   4
+     60	0028			     GetCommanderLine EndP
+     61	0028			     OpenFile proc far ;Sirve
+     62
+     63					 ; Open	file
+     64
+     65	0028  B4 3D			 mov ah, 3Dh
+     66	002A  32 C0			 xor al, al
+     67	002C  BA 0000r			 mov dx, offset	filename
+     68	002F  CD 21			 int 21h
      69
-     70	0037				 openerror:
-     71	0037  BA 00FFr			 mov dx, offset	ErrorMsg
-     72	003A  B4 09			 mov ah, 9h
-     73	003C  CD 21			 int 21h
-     74	003E  CB			 ret
-     75	003F			     OpenFile endp
-     76	003F			     Inicio:
-     77
-     78
-     79	003F  B8 0000s			     mov ax,Datos
-     80	0042  8E D8			     mov ds,ax
-     81
-     82					     ;Leer el comando ,	nombre del archivo
-     83	0044  1E			     push Ds
-     84	0045  B8 0000s			     mov ax,seg	filename
-     85	0048  50			     push ax
-     86	0049  B8 0000r			     lea ax,filename
-     87	004C  50			     push ax
-     88	004D  E8 FFB0			     call GetCommanderLine
-     89	0050  1F			     pop Ds
-     90
-     91	0051  0E E8 FFD3		     call OpenFile
+     70	0031  72 04			 jc openerror
+     71	0033  A3 0118r			 mov [filehandle], ax
+     72	0036  CB			 ret
+     73
+     74	0037				 openerror:
+     75	0037  BA 00FFr			 mov dx, offset	ErrorMsg
+     76	003A  B4 09			 mov ah, 9h
+     77	003C  CD 21			 int 21h
+     78	003E  CB			 ret
+     79	003F			     OpenFile endp
+     80	003F			     readfile proc far
+     81	003F  B4 3F			     mov ah,3fh
+     82	0041  8B 1E 0118r		     mov bx,filehandle
+     83	0045  B9 0036			     mov cx,54		       ;; cuantos bytes	se van a leer
+     84	0048  BA 011Ar			     mov dx,offset buffer  ;; donde se va almacenar los	datos
+     85	004B  CD 21			     int 21h
+     86	004D  CB			     Ret
+     87	004E			     readfile endp
+     88
+     89	004E			     Inicio:
+     90	004E  B8 0000s			     mov ax,Datos
+     91	0051  8E D8			     mov ds,ax
      92
-     93					     ;lea dx,filename ;lea=carga la direccion al registro (lea registro16,direccion)
-     94					     ;mov ah,09h ;le mueve al registro ah un 09	en hexadecimal por eso la h
-     95					     ;int 21h  ;int = interrupcion /interrupcion 21,9(ah =09): imprime hasta toparse
-     96						     ; con el simbolo "$",		por eso	en la linea anterior le	movi un	09  +
-     97				     al	ah
-     98					     ;Espera que le de enter  para salirse
-     99					     ;mov ah,01h
-    100					     ;int 21h
-    101					     ;xor ah,ah
-    102
-    103	0055  C6 06 0000e 12		     mov TipoVideo,18
-    104	005A  9A 00000000se		     call PonerModoVideo
-    105
-    106					     ;Espera que le de enter  para salirse
-    107	005F  B4 01			     mov ah,01h
-    108	0061  CD 21			     int 21h
-    109	0063  32 E4			     xor ah,ah
-    110
-    111	0065  C6 06 0000e 03		     mov TipoVideo,3
-    112	006A  9A 00000000se		     call PonerModoVideo
-    113
-    114
-Turbo Assembler	 Version 4.1	    11/11/20 19:34:45	    Page 3
+     93					     ;Leer el comando ,	nombre del archivo
+     94	0053  1E			     push Ds
+     95	0054  B8 0000s			     mov ax,seg	filename
+     96	0057  50			     push ax
+     97	0058  B8 0000r			     lea ax,filename
+     98	005B  50			     push ax
+     99	005C  E8 FFA1			     call GetCommanderLine
+    100	005F  1F			     pop Ds
+    101
+    102	0060  0E E8 FFC4		     call OpenFile
+    103	0064  0E E8 FFD7		     call readfile
+    104					     ;xor cx,cx
+    105					     ;mov cl,64d
+    106					     ;cicloN:
+    107					     ;	     mov ah,02h
+    108					     ;	     mov dl,buffer[cl]
+    109					     ;	     int 21h
+    110					     ;loop cicloN
+    111
+    112
+    113	0068  BA 011Ar			     lea dx,buffer ;lea=carga la direccion al registro (lea registro16,direccion)
+    114	006B  B4 09			     mov ah,09h	;le mueve al registro ah un 09 en hexadecimal por eso la h
+Turbo Assembler	 Version 4.1	    11/13/20 19:29:36	    Page 3
 bmp2asc.ASM
 
 
 
-    115	006F  B8 4C00			 mov ax,4c00h
-    116	0072  CD 21			     int 21h
-    117
-    118	0074			      Codigo EndS
-    119					     End Inicio
-Turbo Assembler	 Version 4.1	    11/11/20 19:34:45	    Page 4
+    115	006D  CD 21			     int 21h  ;int = interrupcion /interrupcion	21,9(ah	=09): imprime hasta toparse
+    116						     ; con el simbolo "$",		por eso	en la linea anterior le	movi un	09  +
+    117				     al	ah
+    118					     ;Espera que le de enter  para salirse
+    119	006F  B4 01			     mov ah,01h
+    120	0071  CD 21			     int 21h
+    121	0073  32 E4			     xor ah,ah
+    122
+    123	0075  C6 06 0000e 12		     mov TipoVideo,18
+    124	007A  9A 00000000se		     call PonerModoVideo
+    125
+    126					     ;Espera que le de enter  para salirse
+    127	007F  B4 01			     mov ah,01h
+    128	0081  CD 21			     int 21h
+    129	0083  32 E4			     xor ah,ah
+    130
+    131	0085  C6 06 0000e 03		     mov TipoVideo,3
+    132	008A  9A 00000000se		     call PonerModoVideo
+    133
+    134
+    135	008F  B8 4C00			 mov ax,4c00h
+    136	0092  CD 21			     int 21h
+    137
+    138	0094			      Codigo EndS
+    139					     End Inicio
+Turbo Assembler	 Version 4.1	    11/13/20 19:29:36	    Page 4
 Symbol Table
 
 
@@ -140,23 +160,26 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "11/11/20"
+??DATE				  Text	 "11/13/20"
 ??FILENAME			  Text	 "bmp2asc "
-??TIME				  Text	 "19:34:45"
+??TIME				  Text	 "19:29:36"
 ??VERSION			  Number 040A
 @CPU				  Text	 0101H
 @CURSEG				  Text	 CODIGO
 @FILENAME			  Text	 BMP2ASC
 @WORDSIZE			  Text	 2
+BUFFER				  Byte	 DATOS:011A
+CONT				  Byte	 DATOS:0219
 ERRORMSG			  Byte	 DATOS:00FF
 FILEHANDLE			  Word	 DATOS:0118
 FILENAME			  Byte	 DATOS:0000
 GETCOMMANDERLINE		  Near	 CODIGO:0000
-INICIO				  Near	 CODIGO:003F
+INICIO				  Near	 CODIGO:004E
 LONGLC				  Number 0080
 OPENERROR			  Near	 CODIGO:0037
 OPENFILE			  Far	 CODIGO:0028
 PONERMODOVIDEO			  Far	 ----:---- Extern
+READFILE			  Far	 CODIGO:003F
 TIPOVIDEO			  Byte	 DATOS:---- Extern
 
 Macro Name
@@ -166,6 +189,6 @@ LISTPUSH
 
 Groups & Segments		  Bit Size Align  Combine Class
 
-CODIGO				  16  0074 Para	  none
-DATOS				  16  011A Para	  Public  DATOS
+CODIGO				  16  0094 Para	  none
+DATOS				  16  021A Para	  Public  DATOS
 
