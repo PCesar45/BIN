@@ -10,9 +10,9 @@ ProceFar        equ 2
 ProceNear       equ 0
 
 Datos Segment para public 'Datos'
- ;extrn filaG       :word
- ;extrn columnaG    :word
- ;extrn colorPixel  :byte
+; extrn filaG       :word
+; extrn columnaG    :word
+; extrn colorPixel  :byte
 
  	TipoVideo db ?
 Datos EndS

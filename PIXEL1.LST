@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    11/08/20 21:31:54	    Page 1
+Turbo Assembler	 Version 4.1	    11/14/20 15:21:10	    Page 1
 pixel1.ASM
 
 
@@ -57,7 +57,7 @@ pixel1.ASM
      52	0041  CD 21			     int 21h
      53	0043			      Codigo EndS
      54					     End Inicio
-Turbo Assembler	 Version 4.1	    11/08/20 21:31:54	    Page 2
+Turbo Assembler	 Version 4.1	    11/14/20 15:21:10	    Page 2
 Symbol Table
 
 
@@ -65,9 +65,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "11/08/20"
+??DATE				  Text	 "11/14/20"
 ??FILENAME			  Text	 "pixel1  "
-??TIME				  Text	 "21:31:54"
+??TIME				  Text	 "15:21:10"
 ??VERSION			  Number 040A
 @CPU				  Text	 0101H
 @CURSEG				  Text	 CODIGO

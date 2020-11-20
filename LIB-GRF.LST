@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    11/13/20 19:29:37	    Page 1
+Turbo Assembler	 Version 4.1	    11/20/20 16:38:12	    Page 1
 lib-grf.ASM
 
 
@@ -60,7 +60,7 @@ lib-grf.ASM
 1    55					    lea	      dx,String	     ;Coloca la	dirección del desplazamiento de	la etiqueta	    +
      56				     DS:Message
 1    57					    mov	      ah,09	     ;parámetro	09 del servicio	de int 21 (imprimir en pantalla	    +
-Turbo Assembler	 Version 4.1	    11/13/20 19:29:37	    Page 2
+Turbo Assembler	 Version 4.1	    11/20/20 16:38:12	    Page 2
 lib-grf.ASM
 
 
@@ -122,7 +122,7 @@ lib-grf.ASM
     112				     Public TipoVideo
     113
     114	      =0002		     valorParametros equ 2
-Turbo Assembler	 Version 4.1	    11/13/20 19:29:37	    Page 3
+Turbo Assembler	 Version 4.1	    11/20/20 16:38:12	    Page 3
 lib-grf.ASM
 
 
@@ -131,9 +131,9 @@ lib-grf.ASM
     116	      =0000		     ProceNear	     equ 0
     117
     118	0000			     Datos Segment para	public 'Datos'
-    119				      ;extrn filaG	 :word
-    120				      ;extrn columnaG	 :word
-    121				      ;extrn colorPixel	 :byte
+    119				     ; extrn filaG	 :word
+    120				     ; extrn columnaG	 :word
+    121				     ; extrn colorPixel	 :byte
     122
     123	0000  ??			     TipoVideo db ?
     124	0001			     Datos EndS
@@ -163,7 +163,7 @@ lib-grf.ASM
     148
     149	0008			     Codigo EndS
     150				     End
-Turbo Assembler	 Version 4.1	    11/13/20 19:29:37	    Page 4
+Turbo Assembler	 Version 4.1	    11/20/20 16:38:12	    Page 4
 Symbol Table
 
 
@@ -171,9 +171,9 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "11/13/20"
+??DATE				  Text	 "11/20/20"
 ??FILENAME			  Text	 "lib-grf "
-??TIME				  Text	 "19:29:36"
+??TIME				  Text	 "16:38:12"
 ??VERSION			  Number 040A
 @CPU				  Text	 0101H
 @CURSEG				  Text	 CODIGO

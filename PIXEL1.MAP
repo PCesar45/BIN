@@ -1,11 +1,13 @@
 
  Start  Stop   Length Name               Class
 
- 00000H 0001FH 00020H DATOS              DATOS
- 00020H 00062H 00043H CODIGO             
- 00070H 00085H 00016H CODIGO             
- 00090H 000FDH 0006EH PROCEDIMIENTOS     
+ 00000H 00006H 00007H DATOS              DATOS
+ 00010H 00052H 00043H CODIGO             
 
-Program entry point at 0002:0000
+Error: Undefined symbol TIPOVIDEO in module PIXEL1.ASM
+Error: Undefined symbol PONERMODOVIDEO in module PIXEL1.ASM
+Error: Undefined symbol PONERPIXEL in module PIXEL1.ASM
+Error: Undefined symbol LEERCHAR in module PIXEL1.ASM
+Program entry point at 0001:0000
 Warning: No stack
 
