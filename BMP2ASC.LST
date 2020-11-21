@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    11/20/20 18:45:18	    Page 1
+Turbo Assembler	 Version 4.1	    11/20/20 19:44:20	    Page 1
 bmp2asc.ASM
 
 
@@ -8,22 +8,22 @@ bmp2asc.ASM
       3
       4	0000			     Datos Segment para	public 'Datos'
       5					     extrn TipoVideo :byte
-      6	0000  FF*(??)			     filename db    0FFh Dup (?)
-      7	00FF  45 72 72 6F 72 20	61+	     ErrorMsg db    'Error al abrir archivo', 13, 10,'$'
+      6	0000  FF*(??)			     filename	    db	  0FFh Dup (?)
+      7	00FF  45 72 72 6F 72 20	61+	     ErrorMsg	    db	  'Error al abrir archivo', 13,	10,'$'
       8	      6C 20 61 62 72 69	72+
       9	      20 61 72 63 68 69	76+
      10	      6F 0D 0A 24
-     11	0118  ????			     filehandle	dw ?
+     11	0118  ????			     filehandle	 dw ?
      12	011A				     header label word
-     13	011A  ????			     Width dw ?
-     14	011C  ????			     Height dw ?
-     15	011E  0400*(24)			     infimg db 400h dup('$')
-     16	051E  4E 6F 20 65 73 20	75+	     nobmp  db	'No es un archivo bmp',	13, 10,'$'
+     13	011A  ????			     Width    dw ?
+     14	011C  ????			     Height   dw   ?
+     15	011E  0400*(24)			     infimg   db   400h	dup('$')
+     16	051E  4E 6F 20 65 73 20	75+	     nobmp    db  'No es un archivo bmp', 13, 10,'$'
      17	      6E 20 61 72 63 68	69+
      18	      76 6F 20 62 6D 70	0D+
      19	      0A 24
-     20	0535  4C 61 20 69 6D 61	67+	     nowidth db	 'La imagen es demasiado ancha,debe tener un ancho menor a 320 pixeles', 13,+
-     21	      65 6E 20 65 73 20	64+  10,'$'
+     20	0535  4C 61 20 69 6D 61	67+	     nowidth  db  'La imagen es	demasiado ancha,debe tener un ancho menor a 320	pixeles',   +
+     21	      65 6E 20 65 73 20	64+  13, 10,'$'
      22	      65 6D 61 73 69 61	64+
      23	      6F 20 61 6E 63 68	61+
      24	      2C 64 65 62 65 20	74+
@@ -48,227 +48,245 @@ bmp2asc.ASM
      43	      73 20 64 65 20 31	36+
      44	      20 63 6F 6C 6F 72	65+
      45	      73 0D 0A 24
-     46	05E2  ????			     pbm dw ?
-     47	05E4  4D42			     Bm	 dw 4D42h
-     48	05E6			     Datos EndS
-     49				      ListPush	Macro lista
-     50						     IRP i,<lista>
-     51							     Push i
-     52						     EndM
-     53					     EndM
-     54
-     55					     ListPop  Macro lista
-     56						     IRP i,<lista>
-     57							     Pop i
-Turbo Assembler	 Version 4.1	    11/20/20 18:45:18	    Page 2
+     46	05E2  4C 61 20 69 6D 61	67+	     comp     db  'La imagen esta comprimida', 13, 10,'$'
+     47	      65 6E 20 65 73 74	61+
+     48	      20 63 6F 6D 70 72	69+
+     49	      6D 69 64 61 0D 0A	24
+     50	05FE  ????			     pbm dw ?
+     51	0600  4D42			     Bm	 dw 4D42h
+     52	0602			     Datos EndS
+     53				      ListPush	Macro lista
+     54						     IRP i,<lista>
+     55							     Push i
+     56						     EndM
+     57					     EndM
+Turbo Assembler	 Version 4.1	    11/20/20 19:44:20	    Page 2
 bmp2asc.ASM
 
 
 
-     58						     EndM
-     59					     EndM
-     60
-     61				     ;----------------------------
-     62	0000			     Codigo Segment
-     63				     Assume cs:Codigo ,	ds:Datos
+     58
+     59					     ListPop  Macro lista
+     60						     IRP i,<lista>
+     61							     Pop i
+     62						     EndM
+     63					     EndM
      64
-     65	0000			     GetCommanderLine Proc Near
-     66	      =0080				     LongLC    EQU   80h
-     67						     ListPush  <Es, Di,	Si, Cx,	Bp>
-2    68	0000  06					     Push Es
-2    69	0001  57					     Push Di
-2    70	0002  56					     Push Si
-2    71	0003  51					     Push Cx
-2    72	0004  55					     Push Bp
-     73	0005  8B EC				     Mov   Bp,Sp
-     74	0007  8C C0				     Mov   Ax,Es
-     75	0009  8E D8				     Mov   Ds,Ax
-     76	000B  8B 7E 0C				     Mov   Di,12[Bp]
-     77	000E  8B 46 0E				     Mov   Ax,14[Bp]
-     78	0011  8E C0				     Mov   Es,Ax
-     79	0013  33 C9				     Xor   Cx,Cx
-     80	0015  8A 0E 0080			     Mov   Cl,Byte Ptr Ds:[LongLC]
-     81	0019  FE C9				     dec   cl
-     82	001B  BE 0082				     Mov   Si,2[LongLC]			       ;dos = uno por la posici�n 81h	y   +
-     83				     uno m�s por el espacio en blanco.
-     84	001E  F3> A4				     Rep   Movsb
-     85						     ListPop <Bp, Bx, Si, Di, Es>
-2    86	0020  5D					     Pop Bp
-2    87	0021  5B					     Pop Bx
-2    88	0022  5E					     Pop Si
-2    89	0023  5F					     Pop Di
-2    90	0024  07					     Pop Es
-     91	0025  C2 0004				     Ret   4
-     92	0028			     GetCommanderLine EndP
-     93	0028			     OpenFile proc far ;Sirve
-     94
-     95					 ; Open	file
-     96
-     97	0028  B4 3D			 mov ah, 3Dh
-     98	002A  32 C0			 xor al, al
-     99	002C  BA 0000r			 mov dx, offset	filename
-    100	002F  CD 21			 int 21h
-    101
-    102	0031  72 04			 jc openerror
-    103	0033  A3 0118r			 mov [filehandle], ax
-    104	0036  CB			 ret
+     65				     ;----------------------------
+     66	0000			     Codigo Segment
+     67				     Assume cs:Codigo ,	ds:Datos
+     68
+     69	0000			     GetCommanderLine Proc Near
+     70	      =0080				     LongLC    EQU   80h
+     71						     ListPush  <Es, Di,	Si, Cx,	Bp>
+2    72	0000  06					     Push Es
+2    73	0001  57					     Push Di
+2    74	0002  56					     Push Si
+2    75	0003  51					     Push Cx
+2    76	0004  55					     Push Bp
+     77	0005  8B EC				     Mov   Bp,Sp
+     78	0007  8C C0				     Mov   Ax,Es
+     79	0009  8E D8				     Mov   Ds,Ax
+     80	000B  8B 7E 0C				     Mov   Di,12[Bp]
+     81	000E  8B 46 0E				     Mov   Ax,14[Bp]
+     82	0011  8E C0				     Mov   Es,Ax
+     83	0013  33 C9				     Xor   Cx,Cx
+     84	0015  8A 0E 0080			     Mov   Cl,Byte Ptr Ds:[LongLC]
+     85	0019  FE C9				     dec   cl
+     86	001B  BE 0082				     Mov   Si,2[LongLC]			       ;dos = uno por la posici�n 81h	y   +
+     87				     uno m�s por el espacio en blanco.
+     88	001E  F3> A4				     Rep   Movsb
+     89						     ListPop <Bp, Bx, Si, Di, Es>
+2    90	0020  5D					     Pop Bp
+2    91	0021  5B					     Pop Bx
+2    92	0022  5E					     Pop Si
+2    93	0023  5F					     Pop Di
+2    94	0024  07					     Pop Es
+     95	0025  C2 0004				     Ret   4
+     96	0028			     GetCommanderLine EndP
+     97	0028			     OpenFile proc far ;Sirve
+     98
+     99					 ; Open	file
+    100
+    101	0028  B4 3D			 mov ah, 3Dh
+    102	002A  32 C0			 xor al, al
+    103	002C  BA 0000r			 mov dx, offset	filename
+    104	002F  CD 21			 int 21h
     105
-    106	0037				 openerror:
-    107	0037  BA 00FFr			 mov dx, offset	ErrorMsg
-    108	003A  B4 09			 mov ah, 9h
-    109	003C  CD 21			 int 21h
-    110	003E  CB			 ret
-    111	003F			     OpenFile endp
-    112	003F			     readfile proc far
-    113				     ;-------------------------lee la cabecera del bmp-----------------------------------------
-    114	003F  B4 3F			 mov ah,3fh
-Turbo Assembler	 Version 4.1	    11/20/20 18:45:18	    Page 3
+    106	0031  72 04			 jc openerror
+    107	0033  A3 0118r			 mov [filehandle], ax
+    108	0036  CB			 ret
+    109
+    110	0037				 openerror:
+    111	0037  BA 00FFr			 mov dx, offset	ErrorMsg
+    112	003A  B4 09			 mov ah, 9h
+    113	003C  CD 21			 int 21h
+    114	003E  CB			 ret
+Turbo Assembler	 Version 4.1	    11/20/20 19:44:20	    Page 3
 bmp2asc.ASM
 
 
 
-    115	0041  8B 1E 0118r		     mov bx,filehandle
-    116	0045  B9 0036			     mov cx,54		   ;; cuantos bytes se van a leer
-    117	0048  BA 011Ar			     mov dx,offset header  ;; donde se va almacenar los	datos
-    118	004B  CD 21			     int 21h
-    119
-    120
-    121				     ;------------------------------------------------------------------
-    122
-    123				     ;--------------------Valida que el	archivo	sea Bmp----------------------------------------------
-    124	004D  33 C0			     xor  ax,ax
-    125	004F  A1 011Ar			     mov  ax,header[00h]
+    115	003F			     OpenFile endp
+    116	003F			     readfile proc far
+    117				     ;-------------------------lee la cabecera del bmp-----------------------------------------
+    118	003F  B4 3F			 mov ah,3fh
+    119	0041  8B 1E 0118r		     mov bx,filehandle
+    120	0045  B9 0036			     mov cx,54		   ;; cuantos bytes se van a leer
+    121	0048  BA 011Ar			     mov dx,offset header  ;; donde se va almacenar los	datos
+    122	004B  CD 21			     int 21h
+    123
+    124
+    125				     ;------------------------------------------------------------------
     126
-    127	0052  39 06 05E4r		     cmp   Bm, ax
-    128	0056  75 02			 jnz Noiguales
-    129
-    130	0058  EB 0A			 jmp short saleif
-    131
-    132	005A				 Noiguales:
-    133	005A  BA 051Er				 mov dx,offset nobmp
-    134	005D  B4 09				     mov ah,09h
-    135	005F  CD 21				     int 21h
-    136	0061  E9 0095				     jmp Salir
-    137	0064				 saleif:
-    138				     ;------------------Validar	que el bmp se de 16 colores-----
-    139	0064  33 C0			     xor  ax,ax
-    140	0066  A1 0136r			     mov  ax,header[1ch]
-    141
-    142	0069  3C 04			 cmp al,4
-    143	006B  75 02			 jnz errbits
-    144
-    145	006D  EB 0A			 jmp short saleif1
-    146
-    147	006F				 errbits:
-    148	006F  BA 05C2r				     mov dx,offset no16c
-    149	0072  B4 09				     mov ah,09h
-    150	0074  CD 21				     int 21h
-    151	0076  E9 0080				     jmp Salir
-    152	0079				 saleif1:
-    153				     ;------------------leer y validar el ancho-------------
-    154	0079  33 C0			     xor  ax,ax
-    155	007B  A1 012Cr			     mov  ax,header[12h]
-    156	007E  A3 011Ar			     mov  Width,ax
-    157
-    158	0081  33 C0			     xor ax, ax
-    159	0083  B8 0140			     mov ax,320
-    160	0086  39 06 011Ar		     cmp width,ax
-    161	008A  7F 02			     jg	ErrAncho
-    162
-    163	008C  EB 0A			     jmp short salirif
-    164
-    165	008E				     ErrAncho:
-    166	008E  BA 0535r				mov dx,offset nowidth
-    167	0091  B4 09				mov ah,09h
-    168	0093  CD 21				int 21h
-    169	0095  EB 62 90				jmp Salir
-    170	0098				     salirif:
-    171				     ;------------------leer y validar el alto-------------
-Turbo Assembler	 Version 4.1	    11/20/20 18:45:18	    Page 4
+    127				     ;--------------------Valida que el	archivo	sea Bmp----------------------------------------------
+    128	004D  33 C0			     xor  ax,ax
+    129	004F  A1 011Ar			     mov  ax,header[00h]
+    130
+    131	0052  39 06 0600r		     cmp   Bm, ax
+    132	0056  75 02			 jnz Noiguales
+    133
+    134	0058  EB 0A			 jmp short saleif
+    135
+    136	005A				 Noiguales:
+    137	005A  BA 051Er				 mov dx,offset nobmp
+    138	005D  B4 09				     mov ah,09h
+    139	005F  CD 21				     int 21h
+    140	0061  E9 00AB				     jmp Salir
+    141	0064				 saleif:
+    142				     ;------------------Validar	que el bmp se de 16 colores-----
+    143	0064  33 C0			     xor  ax,ax
+    144	0066  A1 0136r			     mov  ax,header[1ch]
+    145
+    146	0069  3C 04			 cmp al,4
+    147	006B  75 02			 jnz errbits
+    148
+    149	006D  EB 0A			 jmp short saleif1
+    150
+    151	006F				 errbits:
+    152	006F  BA 05C2r				     mov dx,offset no16c
+    153	0072  B4 09				     mov ah,09h
+    154	0074  CD 21				     int 21h
+    155	0076  E9 0096				     jmp Salir
+    156	0079				 saleif1:
+    157				     ;------------------leer y validar el ancho-------------
+    158	0079  33 C0			     xor  ax,ax
+    159	007B  A1 012Cr			     mov  ax,header[12h]
+    160	007E  A3 011Ar			     mov  Width,ax
+    161
+    162	0081  33 C0			     xor ax, ax
+    163	0083  B8 0140			     mov ax,320
+    164	0086  39 06 011Ar		     cmp width,ax
+    165	008A  7F 02			     jg	ErrAncho
+    166
+    167	008C  EB 0A			     jmp short salirif
+    168
+    169	008E				     ErrAncho:
+    170	008E  BA 0535r				mov dx,offset nowidth
+    171	0091  B4 09				mov ah,09h
+Turbo Assembler	 Version 4.1	    11/20/20 19:44:20	    Page 4
 bmp2asc.ASM
 
 
 
-    172	0098  33 C0			 xor  ax,ax
-    173	009A  A1 0130r			     mov  ax,header[16h]
-    174	009D  A3 011Cr			     mov  [height],ax
-    175
-    176	00A0  33 C0			     xor ax, ax
-    177	00A2  B8 00C8			     mov ax,200
-    178	00A5  39 06 011Cr		     cmp height,ax
-    179	00A9  7F 02			     jg	ErrAlto
-    180
-    181	00AB  EB 0A			     jmp short salirif1
-    182
-    183	00AD				     ErrAlto:
-    184	00AD  BA 057Cr				mov dx,offset noheight
-    185	00B0  B4 09				mov ah,09h
-    186	00B2  CD 21				int 21h
-    187	00B4  EB 43 90				jmp Salir
-    188	00B7				     salirif1:
-    189	00B7  CB		     ret
-    190	00B8			     readfile endp
-    191
-    192	00B8			     Inicio:
-    193	00B8  B8 0000s			     mov ax,Datos
-    194	00BB  8E D8			     mov ds,ax
-    195
-    196					     ;Leer el comando ,	nombre del archivo
-    197	00BD  1E			     push Ds
-    198	00BE  B8 0000s			     mov ax,seg	filename
-    199	00C1  50			     push ax
-    200	00C2  B8 0000r			     lea ax,filename
-    201	00C5  50			     push ax
-    202	00C6  E8 FF37			     call GetCommanderLine
-    203	00C9  1F			     pop Ds
-    204
-    205	00CA  0E E8 FF5A		     call OpenFile
-    206	00CE  0E E8 FF6D		     call readfile
-    207
-    208
+    172	0093  CD 21				int 21h
+    173	0095  EB 78 90				jmp Salir
+    174	0098				     salirif:
+    175				     ;------------------leer y validar el alto-------------
+    176	0098  33 C0			 xor  ax,ax
+    177	009A  A1 0130r			     mov  ax,header[16h]
+    178	009D  A3 011Cr			     mov  [height],ax
+    179
+    180	00A0  33 C0			     xor ax, ax
+    181	00A2  B8 00C8			     mov ax,200
+    182	00A5  39 06 011Cr		     cmp height,ax
+    183	00A9  7F 02			     jg	ErrAlto
+    184
+    185	00AB  EB 0A			     jmp short salirif1
+    186
+    187	00AD				     ErrAlto:
+    188	00AD  BA 057Cr				mov dx,offset noheight
+    189	00B0  B4 09				mov ah,09h
+    190	00B2  CD 21				int 21h
+    191	00B4  EB 59 90				jmp Salir
+    192	00B7				     salirif1:
+    193				     ;-----------Validar compresion---------
+    194	00B7  33 C0			     xor ax,ax
+    195	00B9  A1 0138r			     mov ax,header[30]
+    196	00BC  3D 0000			     cmp ax,0
+    197
+    198	00BF  75 02			     jnz comperr
+    199
+    200	00C1  EB 0A			     jmp short salirif2
+    201	00C3				     comperr:
+    202	00C3  BA 05E2r				mov dx,offset comp
+    203	00C6  B4 09				mov ah,09h
+    204	00C8  CD 21				int 21h
+    205	00CA  EB 43 90				jmp Salir
+    206	00CD				     salirif2:
+    207	00CD  CB		     ret
+    208	00CE			     readfile endp
     209
-    210
-    211
-    212					     ;xor cx,cx
-    213					     ;mov cl,64d
-    214					     ;cicloN:
-    215					     ;	     mov ah,02h
-    216					     ;	     mov dl,offset buffer[cl]
-    217					     ;	     int 21h
-    218					     ;loop cicloN
-    219
-    220
-    221	00D2  BA 011Ar			     mov dx,offset Width
-    222	00D5  B4 09			     mov ah,09h
-    223	00D7  CD 21			     int 21h
-    224
-    225	00D9  B4 01			     mov ah,01h
-    226	00DB  CD 21			     int 21h
-    227	00DD  32 E4			     xor ah,ah
+    210	00CE			     Inicio:
+    211	00CE  B8 0000s			     mov ax,Datos
+    212	00D1  8E D8			     mov ds,ax
+    213
+    214					     ;Leer el comando ,	nombre del archivo
+    215	00D3  1E			     push Ds
+    216	00D4  B8 0000s			     mov ax,seg	filename
+    217	00D7  50			     push ax
+    218	00D8  B8 0000r			     lea ax,filename
+    219	00DB  50			     push ax
+    220	00DC  E8 FF21			     call GetCommanderLine
+    221	00DF  1F			     pop Ds
+    222
+    223	00E0  0E E8 FF44		     call OpenFile
+    224	00E4  0E E8 FF57		     call readfile
+    225
+    226
+    227
     228
-Turbo Assembler	 Version 4.1	    11/20/20 18:45:18	    Page 5
+Turbo Assembler	 Version 4.1	    11/20/20 19:44:20	    Page 5
 bmp2asc.ASM
 
 
 
-    229	00DF  C6 06 0000e 12		     mov TipoVideo,18
-    230	00E4  9A 00000000se		     call PonerModoVideo
-    231
-    232					     ;Espera que le de enter  para salirse
-    233	00E9  B4 01			     mov ah,01h
-    234	00EB  CD 21			     int 21h
-    235	00ED  32 E4			     xor ah,ah
-    236
-    237	00EF  C6 06 0000e 03		     mov TipoVideo,3
-    238	00F4  9A 00000000se		     call PonerModoVideo
-    239
-    240	00F9				     Salir:
-    241	00F9  B8 4C00			 mov ax,4c00h
-    242	00FC  CD 21			     int 21h
-    243
-    244	00FE			      Codigo EndS
-    245					     End Inicio
-Turbo Assembler	 Version 4.1	    11/20/20 18:45:18	    Page 6
+    229
+    230					     ;xor cx,cx
+    231					     ;mov cl,64d
+    232					     ;cicloN:
+    233					     ;	     mov ah,02h
+    234					     ;	     mov dl,offset buffer[cl]
+    235					     ;	     int 21h
+    236					     ;loop cicloN
+    237
+    238
+    239	00E8  BA 011Ar			     mov dx,offset Width
+    240	00EB  B4 09			     mov ah,09h
+    241	00ED  CD 21			     int 21h
+    242
+    243	00EF  B4 01			     mov ah,01h
+    244	00F1  CD 21			     int 21h
+    245	00F3  32 E4			     xor ah,ah
+    246
+    247	00F5  C6 06 0000e 12		     mov TipoVideo,18
+    248	00FA  9A 00000000se		     call PonerModoVideo
+    249
+    250					     ;Espera que le de enter  para salirse
+    251	00FF  B4 01			     mov ah,01h
+    252	0101  CD 21			     int 21h
+    253	0103  32 E4			     xor ah,ah
+    254
+    255	0105  C6 06 0000e 03		     mov TipoVideo,3
+    256	010A  9A 00000000se		     call PonerModoVideo
+    257
+    258	010F				     Salir:
+    259	010F  B8 4C00			 mov ax,4c00h
+    260	0112  CD 21			     int 21h
+    261
+    262	0114			      Codigo EndS
+    263					     End Inicio
+Turbo Assembler	 Version 4.1	    11/20/20 19:44:20	    Page 6
 Symbol Table
 
 
@@ -278,13 +296,15 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "11/20/20"
 ??FILENAME			  Text	 "bmp2asc "
-??TIME				  Text	 "18:45:18"
+??TIME				  Text	 "19:44:20"
 ??VERSION			  Number 040A
 @CPU				  Text	 0101H
 @CURSEG				  Text	 CODIGO
 @FILENAME			  Text	 BMP2ASC
 @WORDSIZE			  Text	 2
-BM				  Word	 DATOS:05E4
+BM				  Word	 DATOS:0600
+COMP				  Byte	 DATOS:05E2
+COMPERR				  Near	 CODIGO:00C3
 ERRALTO				  Near	 CODIGO:00AD
 ERRANCHO			  Near	 CODIGO:008E
 ERRBITS				  Near	 CODIGO:006F
@@ -295,7 +315,7 @@ GETCOMMANDERLINE		  Near	 CODIGO:0000
 HEADER				  Word	 DATOS:011A
 HEIGHT				  Word	 DATOS:011C
 INFIMG				  Byte	 DATOS:011E
-INICIO				  Near	 CODIGO:00B8
+INICIO				  Near	 CODIGO:00CE
 LONGLC				  Number 0080
 NO16C				  Byte	 DATOS:05C2
 NOBMP				  Byte	 DATOS:051E
@@ -304,14 +324,15 @@ NOIGUALES			  Near	 CODIGO:005A
 NOWIDTH				  Byte	 DATOS:0535
 OPENERROR			  Near	 CODIGO:0037
 OPENFILE			  Far	 CODIGO:0028
-PBM				  Word	 DATOS:05E2
+PBM				  Word	 DATOS:05FE
 PONERMODOVIDEO			  Far	 ----:---- Extern
 READFILE			  Far	 CODIGO:003F
 SALEIF				  Near	 CODIGO:0064
 SALEIF1				  Near	 CODIGO:0079
-SALIR				  Near	 CODIGO:00F9
+SALIR				  Near	 CODIGO:010F
 SALIRIF				  Near	 CODIGO:0098
 SALIRIF1			  Near	 CODIGO:00B7
+SALIRIF2			  Near	 CODIGO:00CD
 TIPOVIDEO			  Byte	 DATOS:---- Extern
 WIDTH				  Word	 DATOS:011A
 
@@ -322,6 +343,6 @@ LISTPUSH
 
 Groups & Segments		  Bit Size Align  Combine Class
 
-CODIGO				  16  00FE Para	  none
-DATOS				  16  05E6 Para	  Public  DATOS
+CODIGO				  16  0114 Para	  none
+DATOS				  16  0602 Para	  Public  DATOS
 

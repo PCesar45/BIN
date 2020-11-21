@@ -3,17 +3,18 @@ extrn PonerModoVideo	:far
 
 Datos Segment para public 'Datos'
 	extrn TipoVideo :byte
-	filename db    0FFh Dup (?)
-	ErrorMsg db    'Error al abrir archivo', 13, 10,'$'
-	filehandle dw ?
+	filename       db    0FFh Dup (?)
+	ErrorMsg       db    'Error al abrir archivo', 13, 10,'$'
+	filehandle  dw ?
 	header label word
-	Width dw ?
-	Height dw ?
-	infimg db 400h dup('$')
-	nobmp  db  'No es un archivo bmp', 13, 10,'$'
-	nowidth db  'La imagen es demasiado ancha,debe tener un ancho menor a 320 pixeles', 13, 10,'$'
+	Width    dw ?
+	Height   dw   ?
+	infimg   db   400h dup('$')
+	nobmp    db  'No es un archivo bmp', 13, 10,'$'
+	nowidth  db  'La imagen es demasiado ancha,debe tener un ancho menor a 320 pixeles', 13, 10,'$'
 	noheight db  'La imagen es demasiado alta,debe tener un alto  menor a 200 pixeles', 13, 10,'$'
 	no16c    db  'La imagen no es de 16 colores', 13, 10,'$'
+	comp     db  'La imagen esta comprimida', 13, 10,'$'
 	pbm dw ?
 	Bm  dw 4D42h
 Datos EndS 
@@ -146,6 +147,20 @@ readfile proc far
 	   int 21h
 	   jmp Salir
 	salirif1:
+;-----------Validar compresion---------
+	xor ax,ax
+	mov ax,header[30]
+	cmp ax,0
+
+	jnz comperr
+	
+	jmp short salirif2
+	comperr:
+	   mov dx,offset comp 
+	   mov ah,09h 
+	   int 21h
+	   jmp Salir
+	salirif2:
 ret	
 readfile endp 
 
