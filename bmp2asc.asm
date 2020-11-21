@@ -12,6 +12,8 @@ Datos Segment para public 'Datos'
 	infimg db 400h dup('$')
 	nobmp  db  'No es un archivo bmp', 13, 10,'$'
 	nowidth db  'La imagen es demasiado ancha,debe tener un ancho menor a 320 pixeles', 13, 10,'$'
+	noheight db  'La imagen es demasiado alta,debe tener un alto  menor a 200 pixeles', 13, 10,'$'
+	no16c    db  'La imagen no es de 16 colores', 13, 10,'$'
 	pbm dw ?
 	Bm  dw 4D42h
 Datos EndS 
@@ -93,7 +95,21 @@ readfile proc far
 		int 21h
 		jmp Salir
     saleif:
-;------------------------------------------------------------------	
+;------------------Validar que el bmp se de 16 colores-----
+	xor  ax,ax
+	mov  ax,header[1ch]
+   
+    cmp al,4
+    jnz errbits
+
+    jmp short saleif1
+
+    errbits:
+		mov dx,offset no16c 
+		mov ah,09h 
+		int 21h
+		jmp Salir
+    saleif1:	
 ;------------------leer y validar el ancho-------------
 	xor  ax,ax
 	mov  ax,header[12h]
@@ -102,7 +118,7 @@ readfile proc far
 	xor ax, ax 
 	mov ax,320
 	cmp width,ax
-	ja ErrAncho
+	jg ErrAncho
 	
 	jmp short salirif
 
@@ -112,7 +128,25 @@ readfile proc far
 	   int 21h
 	   jmp Salir
 	salirif:
-	Ret
+;------------------leer y validar el alto-------------
+    xor  ax,ax
+	mov  ax,header[16h]
+	mov  [height],ax
+
+	xor ax, ax 
+	mov ax,200
+	cmp height,ax
+	jg ErrAlto
+	
+	jmp short salirif1
+
+	ErrAlto:
+	   mov dx,offset noheight 
+	   mov ah,09h 
+	   int 21h
+	   jmp Salir
+	salirif1:
+ret	
 readfile endp 
 
 Inicio:
@@ -132,6 +166,7 @@ Inicio:
 	call readfile
 	
 	
+		
 
 
 	;xor cx,cx
