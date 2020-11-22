@@ -1,4 +1,4 @@
-Turbo Assembler	 Version 4.1	    11/22/20 17:41:22	    Page 1
+Turbo Assembler	 Version 4.1	    11/22/20 17:45:57	    Page 1
 bmp2asc.ASM
 
 
@@ -60,7 +60,7 @@ bmp2asc.ASM
      55	020A  ????			     nfila   dw	  ?
      56	020C  0000			     numbit  dw	  0
      57	020E			     Datos EndS
-Turbo Assembler	 Version 4.1	    11/22/20 17:41:22	    Page 2
+Turbo Assembler	 Version 4.1	    11/22/20 17:45:57	    Page 2
 bmp2asc.ASM
 
 
@@ -122,7 +122,7 @@ bmp2asc.ASM
     112	0033  A3 0118r			 mov [filehandle], ax
     113	0036  CB			 ret
     114
-Turbo Assembler	 Version 4.1	    11/22/20 17:41:22	    Page 3
+Turbo Assembler	 Version 4.1	    11/22/20 17:45:57	    Page 3
 bmp2asc.ASM
 
 
@@ -184,7 +184,7 @@ bmp2asc.ASM
     169	008A  39 06 0120r		     cmp bWidth,ax
     170	008E  7F 02			     jg	ErrAncho
     171
-Turbo Assembler	 Version 4.1	    11/22/20 17:41:22	    Page 4
+Turbo Assembler	 Version 4.1	    11/22/20 17:45:57	    Page 4
 bmp2asc.ASM
 
 
@@ -246,7 +246,7 @@ bmp2asc.ASM
     226
     227
     228	00D6  CB			     ret
-Turbo Assembler	 Version 4.1	    11/22/20 17:41:22	    Page 5
+Turbo Assembler	 Version 4.1	    11/22/20 17:45:57	    Page 5
 bmp2asc.ASM
 
 
@@ -308,7 +308,7 @@ bmp2asc.ASM
     283	00F1  B4 01			     mov ah,01h
     284	00F3  CD 21			     int 21h
     285	00F5  32 E4			     xor ah,ah
-Turbo Assembler	 Version 4.1	    11/22/20 17:41:22	    Page 6
+Turbo Assembler	 Version 4.1	    11/22/20 17:45:57	    Page 6
 bmp2asc.ASM
 
 
@@ -333,7 +333,7 @@ bmp2asc.ASM
     303
     304	0116			      Codigo EndS
     305					     End Inicio
-Turbo Assembler	 Version 4.1	    11/22/20 17:41:22	    Page 7
+Turbo Assembler	 Version 4.1	    11/22/20 17:45:57	    Page 7
 Symbol Table
 
 
@@ -343,7 +343,7 @@ Symbol Name			  Type	 Value
 
 ??DATE				  Text	 "11/22/20"
 ??FILENAME			  Text	 "bmp2asc "
-??TIME				  Text	 "17:41:22"
+??TIME				  Text	 "17:45:56"
 ??VERSION			  Number 040A
 @CPU				  Text	 0101H
 @CURSEG				  Text	 CODIGO
@@ -392,7 +392,7 @@ Macro Name
 
 LISTPOP
 LISTPUSH
-Turbo Assembler	 Version 4.1	    11/22/20 17:41:22	    Page 8
+Turbo Assembler	 Version 4.1	    11/22/20 17:45:57	    Page 8
 Symbol Table
 
 
