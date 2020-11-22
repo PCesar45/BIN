@@ -1,22 +1,27 @@
 ;Examen1 de arquitectura de computadores
 extrn PonerModoVideo	:far
-
 Datos Segment para public 'Datos'
+
 	extrn TipoVideo :byte
 	filename       db    0FFh Dup (?)
 	ErrorMsg       db    'Error al abrir archivo', 13, 10,'$'
 	filehandle  dw ?
-	header label word
-	Width    dw ?
-	Height   dw   ?
-	infimg   db   400h dup('$')
-	nobmp    db  'No es un archivo bmp', 13, 10,'$'
-	nowidth  db  'La imagen es demasiado ancha,debe tener un ancho menor a 320 pixeles', 13, 10,'$'
-	noheight db  'La imagen es demasiado alta,debe tener un alto  menor a 200 pixeles', 13, 10,'$'
-	no16c    db  'La imagen no es de 16 colores', 13, 10,'$'
-	comp     db  'La imagen esta comprimida', 13, 10,'$'
+	header    label word
+	colorp    db   6 dup(0)
+	bWidth    dw   ?
+	bHeight   dw   ?
+	;infimg    db   400h dup('$')
+	nobmp     db  'No es un archivo bmp', 13, 10,'$'
+	nowidth   db  'La imagen es demasiado ancha,debe tener un ancho menor a 320 pixeles', 13, 10,'$'
+	noheight  db  'La imagen es demasiado alta,debe tener un alto  menor a 200 pixeles', 13, 10,'$'
+	no16c     db  'La imagen no es de 16 colores', 13, 10,'$'
+	comp      db  'La imagen esta comprimida', 13, 10,'$'
 	pbm dw ?
 	Bm  dw 4D42h
+	;-------------------------------------------
+	ncol    dw   0
+	nfila   dw   ?
+	numbit  dw   0
 Datos EndS 
  ListPush  Macro lista
 		IRP i,<lista>
@@ -70,15 +75,15 @@ OpenFile proc far ;Sirve
     int 21h
     ret
 OpenFile endp
-readfile proc far
+readheader proc far
 ;-------------------------lee la cabecera del bmp-----------------------------------------
     mov ah,3fh
 	mov bx,filehandle
 	mov cx,54             ;; cuantos bytes se van a leer
 	mov dx,offset header  ;; donde se va almacenar los datos
 	int 21h
-
-
+	xor cx,cx
+	xor dx,dx
 ;------------------------------------------------------------------
 
 ;--------------------Valida que el archivo sea Bmp----------------------------------------------
@@ -114,11 +119,11 @@ readfile proc far
 ;------------------leer y validar el ancho-------------
 	xor  ax,ax
 	mov  ax,header[12h]
-	mov  Width,ax
+	mov  bWidth,offset ax
 
 	xor ax, ax 
 	mov ax,320
-	cmp width,ax
+	cmp bWidth,ax
 	jg ErrAncho
 	
 	jmp short salirif
@@ -132,11 +137,11 @@ readfile proc far
 ;------------------leer y validar el alto-------------
     xor  ax,ax
 	mov  ax,header[16h]
-	mov  [height],ax
+	mov  [bheight],ax
 
 	xor ax, ax 
 	mov ax,200
-	cmp height,ax
+	cmp [bheight],ax
 	jg ErrAlto
 	
 	jmp short salirif1
@@ -162,8 +167,23 @@ readfile proc far
 	   jmp Salir
 	salirif2:
 ret	
-readfile endp 
+readheader endp
+ponerPixel proc far
+;    se pasan los parametros de una vez al los registros correspondientes
+;    al:color
+;    dx:fila
+;    cx:columna
+    mov ah,0ch
+	int 10h
+ponerPixel endP
+paintBmp proc far
+	
 
+	
+	
+	
+	ret
+paintBmp EndP
 Inicio:
 	mov ax,Datos
 	mov ds,ax
@@ -178,9 +198,33 @@ Inicio:
 	pop Ds
 
 	call OpenFile
-	call readfile
-	
-	
+	call readheader
+	;call paintBmp
+
+	;xor cx,cx 
+	;dec [bheight]
+	;dec [bwidth]
+   	;columnas:
+	;    mov [nfila],0
+    ;	filas:
+	;		mov ah,3fh
+	;		mov bx,filehandle
+	;		mov cx,3             ;; cuantos bytes se van a leer
+	;		mov dx,offset colorp  ;; donde se va almacenar los datos
+	;		int 21h
+	;	    mov al,colorp
+	;		mov dx,[nfila]
+	;		mov cx,[ncol]
+			
+	;		cmp dx,[bheight]
+	;		call ponerPixel
+	;		inc [nfila]
+	;    jne filas
+	;xor ax,ax 
+	;mov ax,[ncol]
+	;cmp ax,bwidth
+	;inc [ncol]
+   	;jne columnas
 		
 
 
@@ -191,11 +235,7 @@ Inicio:
 	;	mov dl,offset buffer[cl]
 	;	int 21h
 	;loop cicloN
-
-	
-	mov dx,offset Width 
-	mov ah,09h 
-	int 21h  
+	 
 		
 	mov ah,01h 
 	int 21h
@@ -203,7 +243,9 @@ Inicio:
 
 	mov TipoVideo,18
 	call PonerModoVideo
+
 	
+
 	;Espera que le de enter  para salirse
 	mov ah,01h 
 	int 21h
